@@ -611,17 +611,50 @@
 
             .achievement-section {
                 top: 5px;
-                padding: 15px;
+                padding: 10px;
+                margin-bottom: 15px;
             }
 
             .achievement-header {
-                flex-direction: column;
-                gap: 10px;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .achievement-title {
+                font-size: 14px;
+            }
+
+            .achievement-percentage {
+                font-size: 20px;
+            }
+
+            .progress-bar-container {
+                height: 20px;
+                margin: 8px 0;
             }
 
             .achievement-details {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px 5px;
+                font-size: 11px;
+            }
+
+            .achievement-stat {
+                display: flex;
                 flex-direction: column;
-                gap: 8px;
+                align-items: flex-start;
+                gap: 2px;
+            }
+
+            .achievement-stat span {
+                font-size: 10px;
+            }
+
+            .achievement-stat strong {
+                font-size: 14px;
             }
         }
 
