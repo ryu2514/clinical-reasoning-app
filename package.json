@@ -1,0 +1,16 @@
+{
+  "name": "clinical-reasoning-app",
+  "version": "1.0.0",
+  "description": "理学療法士向け臨床推論統合アプリケーション",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000"
+  },
+  "keywords": [
+    "clinical-reasoning",
+    "physical-therapy",
+    "education"
+  ],
+  "author": "Ryuju Kobayashi",
+  "license": "MIT"
+}

@@ -1,0 +1,3332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>臨床推論統合アプリ（最終版）</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #90caf9 0%, #81c784 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 16px 24px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 500;
+            color: #718096;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .tab.active {
+            color: #64b5f6;
+            border-bottom-color: #64b5f6;
+            background: white;
+        }
+
+        .content {
+            padding: 30px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #64b5f6;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title::before {
+            content: '●';
+            color: #64b5f6;
+            margin-right: 10px;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #64b5f6;
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input[type="checkbox"],
+        .checkbox-label input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #64b5f6;
+        }
+
+        .cr-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #64b5f6 0%, #81c784 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(100, 181, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #64b5f6;
+            border: 2px solid #64b5f6;
+        }
+
+        .btn-secondary:hover {
+            background: #64b5f6;
+            color: white;
+        }
+
+        .btn-success {
+            background: #81e6d9;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #4fd1c5;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(129, 230, 217, 0.4);
+        }
+
+        .btn-warning {
+            background: #fbbf24;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #f59e0b;
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #81c784;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .subsection {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .subsection-title {
+            font-weight: 600;
+            color: #64b5f6;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .id-section {
+            background: #e1f5fe;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #64b5f6;
+        }
+
+        .common-info-section {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #ffa726;
+        }
+
+        .id-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: #ffa726;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .session-badge {
+            display: inline-block;
+            background: #64b5f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .inherit-notice {
+            background: #e8f5e9;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 3px solid #4caf50;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+
+        .session-history {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .session-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .session-item:hover {
+            border-left-color: #64b5f6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .session-item.active {
+            border-left-color: #64b5f6;
+            background: #e3f2fd;
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .session-date {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .session-preview {
+            font-size: 13px;
+            color: #718096;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .modal-text {
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .search-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .search-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn-search {
+            background: #64b5f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-search:hover {
+            background: #42a5f5;
+        }
+
+        .case-list {
+            margin-top: 20px;
+        }
+
+        .case-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #64b5f6;
+        }
+
+        .case-info {
+            flex: 1;
+        }
+
+        .case-id {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .case-date {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .case-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-load {
+            background: #81e6d9;
+            color: white;
+        }
+
+        .btn-load:hover {
+            background: #4fd1c5;
+        }
+
+        .btn-delete {
+            background: #fca5a5;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #f87171;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .id-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: nowrap;
+            }
+
+            .tab {
+                font-size: 13px;
+                padding: 12px 16px;
+            }
+
+            .achievement-section {
+                top: 5px;
+                padding: 15px;
+            }
+
+            .achievement-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .achievement-details {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        .achievement-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #64b5f6;
+            position: sticky;
+            top: 10px;
+            z-index: 50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: opacity 0.3s ease;
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .achievement-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .achievement-percentage {
+            font-size: 32px;
+            font-weight: 700;
+            color: #64b5f6;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            transition: width 0.5s ease, background-color 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .progress-high {
+            background: linear-gradient(90deg, #81c784 0%, #4caf50 100%);
+        }
+
+        .progress-medium {
+            background: linear-gradient(90deg, #ffd54f 0%, #ffc107 100%);
+        }
+
+        .progress-low {
+            background: linear-gradient(90deg, #ff8a65 0%, #f44336 100%);
+        }
+
+        .achievement-details {
+            margin-top: 12px;
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .achievement-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .achievement-stat strong {
+            color: #2d3748;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('basic');
+            const [showToast, setShowToast] = useState(false);
+            const [toastMessage, setToastMessage] = useState('');
+            const [showSearchPanel, setShowSearchPanel] = useState(false);
+            const [searchId, setSearchId] = useState('');
+            const [savedPatients, setSavedPatients] = useState([]);
+            const [showInheritModal, setShowInheritModal] = useState(false);
+            const [inheritAction, setInheritAction] = useState(null);
+            const previousTabRef = useRef('basic');
+
+            // 統合患者データ（セッション対応）
+            const [patientData, setPatientData] = useState({
+                patientId: '',
+                createdDate: '',
+                basicInfo: {
+                    name: '', age: '', gender: '', diagnosis: '',
+                    chiefComplaint: '', lifeBackground: '', goalsShort: '', goalsLong: ''
+                },
+                evaluationSessions: [],
+                currentEvaluation: {
+                    sessionDate: '',
+                    difficultMovement: '', compensatoryPattern: '', painLocation: '',
+                    romRestriction: '', muscleWeakness: '', coordination: '', balance: '',
+                    causal_whys: ['', '', ''],
+                    priority: '', hypothesis: ''
+                },
+                exerciseSessions: [],
+                currentExercise: {
+                    sessionDate: '',
+                    mainProblems: '', functionalLevel: '',
+                    pathophysiology: '', evidenceBase: '', anatomyKinesiology: '',
+                    targetImprovement: '', movementType: '', loadSetting: '', frequencyDuration: '',
+                    selectedExercise: '', exerciseRationale: '',
+                    manualTherapy: '', manualTherapyRationale: '',
+                    physicalTherapy: '', physicalTherapyRationale: '',
+                    immediateEffect: '', shortTermEffect: '', longTermEffect: '',
+                    dataReview: '', warrantReview: '', claimModification: ''
+                },
+                caseAnalysis: {
+                    cr1_q1: '', cr1_q1_reason: '', cr1_q2: '', cr1_q2_reason: '', cr1_q3: '', cr1_q3_reason: '', cr1_q4: '', cr1_q4_reason: '', cr1_reflection: '',
+                    cr2_q1: '', cr2_q1_reason: '', cr2_q2: '', cr2_q2_reason: '', cr2_q3: '', cr2_q3_reason: '', cr2_q4: '', cr2_q4_reason: '', cr2_reflection: '',
+                    cr3_q1: '', cr3_q1_reason: '', cr3_q2: '', cr3_q2_reason: '', cr3_q3: '', cr3_q3_reason: '',
+                    cr3_q4: '', cr3_q4_reason: '', cr3_q5: '', cr3_q5_reason: '', cr3_q6: '', cr3_q6_reason: '',
+                    cr3_q7: '', cr3_q7_reason: '', cr3_reflection: '',
+                    triangleData: '', triangleWarrant: '', triangleClaim: '',
+                    flowchartHypotheses: [{id: 1, hypothesis: '', findings: ''}],
+                    flowchartData: null,
+                    isGeneratingFlowchart: false,
+                    flowchartError: null,
+                    treatmentPlans: [],
+                    exercise1: '', exercise2: '', exercise3: '',
+                    immediateEffect: '', shortTermEffect: '', longTermEffect: '',
+                    whatWorked: '', whatDidntWork: '',
+                    dataInsufficient: false, warrantUnclear: false, claimLeap: false,
+                    additionalEvaluation: '', exerciseChanges: '', patientInteraction: '',
+                    learnings: '', patterns: '', nextApplication: ''
+                }
+            });
+
+            useEffect(() => {
+                const saved = localStorage.getItem('savedPatients_v3');
+                if (saved) {
+                    setSavedPatients(JSON.parse(saved));
+                }
+
+                const today = new Date().toISOString().split('T')[0];
+                setPatientData(prev => ({
+                    ...prev,
+                    createdDate: today,
+                    currentEvaluation: { ...prev.currentEvaluation, sessionDate: today },
+                    currentExercise: { ...prev.currentExercise, sessionDate: today }
+                }));
+            }, []);
+
+            // タブ切り替え時の自動引き継ぎ確認
+            useEffect(() => {
+                if (previousTabRef.current === activeTab) return;
+
+                const prevTab = previousTabRef.current;
+                const currentTab = activeTab;
+
+                // 評価→症例分析への切り替え
+                if (prevTab === 'eval' && currentTab === 'case') {
+                    const hasEvalData = patientData.currentEvaluation.romRestriction ||
+                                       patientData.currentEvaluation.muscleWeakness ||
+                                       patientData.currentEvaluation.balance;
+                    if (hasEvalData) {
+                        setInheritAction(() => inheritEvaluationToCase);
+                        setShowInheritModal(true);
+                    }
+                }
+
+                // 症例分析→運動療法への切り替え
+                if (prevTab === 'case' && currentTab === 'exercise') {
+                    const hasCaseData = patientData.caseAnalysis.triangleData ||
+                                       patientData.caseAnalysis.triangleClaim;
+                    if (hasCaseData) {
+                        setInheritAction(() => inheritCaseToExercise);
+                        setShowInheritModal(true);
+                    }
+                }
+
+                previousTabRef.current = currentTab;
+            }, [activeTab]);
+
+            const showMessage = (message) => {
+                setToastMessage(message);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+            };
+
+            const updateBasicInfo = (field, value) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    basicInfo: { ...prev.basicInfo, [field]: value }
+                }));
+            };
+
+            const updateCurrentEvaluation = (field, value) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    currentEvaluation: { ...prev.currentEvaluation, [field]: value }
+                }));
+            };
+
+            const updateCurrentExercise = (field, value) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    currentExercise: { ...prev.currentExercise, [field]: value }
+                }));
+            };
+
+            const updateCaseAnalysis = (field, value) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: { ...prev.caseAnalysis, [field]: value }
+                }));
+            };
+
+            // フローチャート関連の関数
+            const addFlowchartHypothesis = () => {
+                setPatientData(prev => {
+                    const newId = Math.max(...prev.caseAnalysis.flowchartHypotheses.map(h => h.id), 0) + 1;
+                    return {
+                        ...prev,
+                        caseAnalysis: {
+                            ...prev.caseAnalysis,
+                            flowchartHypotheses: [...prev.caseAnalysis.flowchartHypotheses, {id: newId, hypothesis: '', findings: ''}]
+                        }
+                    };
+                });
+            };
+
+            const removeFlowchartHypothesis = (id) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        flowchartHypotheses: prev.caseAnalysis.flowchartHypotheses.filter(h => h.id !== id)
+                    }
+                }));
+            };
+
+            const updateFlowchartHypothesis = (id, field, value) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        flowchartHypotheses: prev.caseAnalysis.flowchartHypotheses.map(h =>
+                            h.id === id ? {...h, [field]: value} : h
+                        )
+                    }
+                }));
+            };
+
+            const generateFlowchart = async () => {
+                const validHypotheses = patientData.caseAnalysis.flowchartHypotheses.filter(
+                    h => h.hypothesis.trim() !== '' && h.findings.trim() !== ''
+                );
+
+                if (validHypotheses.length === 0) {
+                    updateCaseAnalysis('flowchartError', '内容が入力された仮説と所見のペアが少なくとも1つ必要です。');
+                    return;
+                }
+
+                updateCaseAnalysis('isGeneratingFlowchart', true);
+                updateCaseAnalysis('flowchartError', null);
+                updateCaseAnalysis('flowchartData', null);
+
+                try {
+                    const API_KEY = 'AIzaSyB0Sfl8cyo_dNNLqn1Ga0pvMvy7j8GRuQs'; // Gemini API Key
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${API_KEY}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: `あなたは熟練した理学療法士です。以下の仮説と、それぞれに関連付けられた評価所見のリストを分析し、フローチャートとして構造化してください。
+
+提供された各「仮説」に対して、'problem'タイプの親ノードを1つ作成してください。
+その仮説に紐づく各「評価所見」について、改行(\\n)で区切られた各行を独立した'finding'タイプの子ノードとして作成し、対応する親（仮説）ノードに接続してください。
+
+入力データ:
+---
+${validHypotheses.map((h, index) => `
+仮説 ${index + 1}: ${h.hypothesis}
+関連所見:
+${h.findings}
+`).join('\n---\n')}
+---
+
+このフローチャート構造を表すJSONオブジェクトを生成してください。
+- JSONには "nodes" という単一のキーが含まれている必要があります。
+- "nodes" は、フローチャート内の各ノードを表すオブジェクトの配列です。
+- 各ノードには、一意の 'id' (例: "problem-1", "finding-1-1")、'label'、'type' ('problem' または 'finding')、そして 'parentId' が必要です。
+- 仮説から生成されるノード（'problem' type）の 'parentId' は null にしてください。
+- 所見から生成されるノード（'finding' type）には、接続先の仮説ノードの 'id' を 'parentId' として設定してください。`
+                                }]
+                            }],
+                            generationConfig: {
+                                response_mime_type: 'application/json'
+                            }
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error?.message || 'APIエラーが発生しました');
+                    }
+
+                    const jsonText = result.candidates[0].content.parts[0].text;
+                    const data = JSON.parse(jsonText);
+
+                    if (!data.nodes || !Array.isArray(data.nodes)) {
+                        throw new Error('無効なデータ構造がAPIから返されました。');
+                    }
+
+                    updateCaseAnalysis('flowchartData', data);
+                } catch (err) {
+                    updateCaseAnalysis('flowchartError', err.message || '予期せぬエラーが発生しました。');
+                } finally {
+                    updateCaseAnalysis('isGeneratingFlowchart', false);
+                }
+            };
+
+            // 治療選択管理関数
+            const addTreatmentPlan = () => {
+                setPatientData(prev => {
+                    const newId = Math.max(...prev.caseAnalysis.treatmentPlans.map(p => p.id), 0) + 1;
+                    return {
+                        ...prev,
+                        caseAnalysis: {
+                            ...prev.caseAnalysis,
+                            treatmentPlans: [...prev.caseAnalysis.treatmentPlans, {
+                                id: newId,
+                                problemNode: '',
+                                treatmentGoal: '',
+                                options: [{id: 1, name: '', rationale: '', priority: ''}]
+                            }]
+                        }
+                    };
+                });
+            };
+
+            const removeTreatmentPlan = (planId) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        treatmentPlans: prev.caseAnalysis.treatmentPlans.filter(p => p.id !== planId)
+                    }
+                }));
+            };
+
+            const updateTreatmentPlan = (planId, field, value) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        treatmentPlans: prev.caseAnalysis.treatmentPlans.map(p =>
+                            p.id === planId ? {...p, [field]: value} : p
+                        )
+                    }
+                }));
+            };
+
+            const addTreatmentOption = (planId) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        treatmentPlans: prev.caseAnalysis.treatmentPlans.map(p => {
+                            if (p.id === planId) {
+                                const newOptionId = Math.max(...p.options.map(o => o.id), 0) + 1;
+                                return {
+                                    ...p,
+                                    options: [...p.options, {id: newOptionId, name: '', rationale: '', priority: ''}]
+                                };
+                            }
+                            return p;
+                        })
+                    }
+                }));
+            };
+
+            const removeTreatmentOption = (planId, optionId) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        treatmentPlans: prev.caseAnalysis.treatmentPlans.map(p => {
+                            if (p.id === planId) {
+                                return {
+                                    ...p,
+                                    options: p.options.filter(o => o.id !== optionId)
+                                };
+                            }
+                            return p;
+                        })
+                    }
+                }));
+            };
+
+            const updateTreatmentOption = (planId, optionId, field, value) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        treatmentPlans: prev.caseAnalysis.treatmentPlans.map(p => {
+                            if (p.id === planId) {
+                                return {
+                                    ...p,
+                                    options: p.options.map(o =>
+                                        o.id === optionId ? {...o, [field]: value} : o
+                                    )
+                                };
+                            }
+                            return p;
+                        })
+                    }
+                }));
+            };
+
+            // 治療選択から治療介入への引き継ぎ
+            const inheritTreatmentToExercise = () => {
+                if (patientData.caseAnalysis.treatmentPlans.length === 0) {
+                    alert('引き継ぐ治療計画がありません。先に治療選択セクションで治療計画を作成してください。');
+                    return;
+                }
+
+                // 全ての治療計画から問題点と目標を統合
+                const allProblems = patientData.caseAnalysis.treatmentPlans
+                    .map(plan => plan.problemNode)
+                    .filter(p => p.trim() !== '')
+                    .join('\n・ ');
+
+                const allGoals = patientData.caseAnalysis.treatmentPlans
+                    .map(plan => plan.treatmentGoal)
+                    .filter(g => g.trim() !== '')
+                    .join('\n\n');
+
+                // 優先順位が「高」の治療選択肢を抽出
+                let highPriorityOptions = [];
+                patientData.caseAnalysis.treatmentPlans.forEach(plan => {
+                    plan.options.forEach(option => {
+                        if (option.priority === '高' && option.name.trim() !== '') {
+                            highPriorityOptions.push({
+                                problem: plan.problemNode,
+                                name: option.name,
+                                rationale: option.rationale
+                            });
+                        }
+                    });
+                });
+
+                // 優先順位が高い治療がない場合は、全ての治療選択肢を含める
+                if (highPriorityOptions.length === 0) {
+                    patientData.caseAnalysis.treatmentPlans.forEach(plan => {
+                        plan.options.forEach(option => {
+                            if (option.name.trim() !== '') {
+                                highPriorityOptions.push({
+                                    problem: plan.problemNode,
+                                    name: option.name,
+                                    rationale: option.rationale
+                                });
+                            }
+                        });
+                    });
+                }
+
+                // 治療選択肢をテキストに整形
+                const treatmentText = highPriorityOptions.map(opt =>
+                    `【${opt.problem}に対して】\n${opt.name}`
+                ).join('\n\n');
+
+                const rationaleText = highPriorityOptions.map(opt =>
+                    `【${opt.name}の理由】\n${opt.rationale}`
+                ).join('\n\n');
+
+                // 治療介入タブのフィールドに反映
+                setPatientData(prev => ({
+                    ...prev,
+                    currentExercise: {
+                        ...prev.currentExercise,
+                        mainProblems: allProblems ? `・ ${allProblems}` : prev.currentExercise.mainProblems,
+                        targetImprovement: allGoals || prev.currentExercise.targetImprovement,
+                        selectedExercise: treatmentText || prev.currentExercise.selectedExercise,
+                        exerciseRationale: rationaleText || prev.currentExercise.exerciseRationale
+                    }
+                }));
+
+                showMessage('治療選択の内容を治療介入タブに引き継ぎました！');
+                setActiveTab('exercise');
+            };
+
+            // CSV/JSON出力・読み込み機能
+            const downloadCSV = (data, filename) => {
+                const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+            };
+
+            const downloadJSON = (data, filename) => {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+            };
+
+            // 評価データCSV出力
+            const exportEvaluationCSV = () => {
+                const evalData = patientData.currentEvaluation;
+                let csv = '\uFEFF項目,内容\n'; // BOM付きでExcel対応
+                csv += `セッション日付,${evalData.sessionDate}\n`;
+                csv += `困難な動作,${evalData.difficultMovement}\n`;
+                csv += `代償パターン,${evalData.compensatoryPattern}\n`;
+                csv += `疼痛部位,${evalData.painLocation}\n`;
+                csv += `ROM制限,${evalData.romRestriction}\n`;
+                csv += `筋力低下,${evalData.muscleWeakness}\n`;
+                csv += `協調性,${evalData.coordination}\n`;
+                csv += `バランス,${evalData.balance}\n`;
+                csv += `Why1,${evalData.causal_whys[0]}\n`;
+                csv += `Why2,${evalData.causal_whys[1]}\n`;
+                csv += `Why3,${evalData.causal_whys[2]}\n`;
+                csv += `優先順位,${evalData.priority}\n`;
+                csv += `仮説,${evalData.hypothesis}\n`;
+
+                downloadCSV(csv, '評価データ.csv');
+                showMessage('評価データをCSVファイルとしてダウンロードしました');
+            };
+
+            // 評価データCSV読み込み
+            const importEvaluationCSV = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split('\n');
+                        const newEvaluation = { ...patientData.currentEvaluation };
+
+                        lines.forEach(line => {
+                            const [key, ...valueParts] = line.split(',');
+                            const value = valueParts.join(',').trim();
+
+                            switch(key.trim()) {
+                                case 'セッション日付': newEvaluation.sessionDate = value; break;
+                                case '困難な動作': newEvaluation.difficultMovement = value; break;
+                                case '代償パターン': newEvaluation.compensatoryPattern = value; break;
+                                case '疼痛部位': newEvaluation.painLocation = value; break;
+                                case 'ROM制限': newEvaluation.romRestriction = value; break;
+                                case '筋力低下': newEvaluation.muscleWeakness = value; break;
+                                case '協調性': newEvaluation.coordination = value; break;
+                                case 'バランス': newEvaluation.balance = value; break;
+                                case 'Why1': newEvaluation.causal_whys[0] = value; break;
+                                case 'Why2': newEvaluation.causal_whys[1] = value; break;
+                                case 'Why3': newEvaluation.causal_whys[2] = value; break;
+                                case '優先順位': newEvaluation.priority = value; break;
+                                case '仮説': newEvaluation.hypothesis = value; break;
+                            }
+                        });
+
+                        setPatientData(prev => ({
+                            ...prev,
+                            currentEvaluation: newEvaluation
+                        }));
+
+                        showMessage('評価データをCSVから読み込みました');
+                    } catch (err) {
+                        alert('CSVファイルの読み込みに失敗しました: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = ''; // リセット
+            };
+
+            // 症例分析データCSV出力
+            const exportCaseAnalysisCSV = () => {
+                const caseData = patientData.caseAnalysis;
+                let csv = '\uFEFF項目,内容\n';
+
+                // 三角ロジック
+                csv += `三角ロジック_データ,${caseData.triangleData}\n`;
+                csv += `三角ロジック_根拠,${caseData.triangleWarrant}\n`;
+                csv += `三角ロジック_結論,${caseData.triangleClaim}\n`;
+
+                // 治療選択
+                caseData.treatmentPlans.forEach((plan, index) => {
+                    csv += `治療計画${index + 1}_問題点,${plan.problemNode}\n`;
+                    csv += `治療計画${index + 1}_治療目標,${plan.treatmentGoal}\n`;
+                    plan.options.forEach((option, optIndex) => {
+                        csv += `治療計画${index + 1}_選択肢${optIndex + 1}_名称,${option.name}\n`;
+                        csv += `治療計画${index + 1}_選択肢${optIndex + 1}_理由,${option.rationale}\n`;
+                        csv += `治療計画${index + 1}_選択肢${optIndex + 1}_優先順位,${option.priority}\n`;
+                    });
+                });
+
+                downloadCSV(csv, '症例分析データ.csv');
+                showMessage('症例分析データをCSVファイルとしてダウンロードしました');
+            };
+
+            // フローチャートPNG出力
+            const exportFlowchartPNG = async () => {
+                if (!patientData.caseAnalysis.flowchartData) {
+                    alert('フローチャートが生成されていません');
+                    return;
+                }
+
+                const flowchartElement = document.getElementById('flowchart-container');
+                if (!flowchartElement) {
+                    alert('フローチャート要素が見つかりません');
+                    return;
+                }
+
+                try {
+                    showMessage('画像を生成中...');
+                    const canvas = await html2canvas(flowchartElement, {
+                        backgroundColor: '#f1f5f9',
+                        scale: 2, // 高解像度
+                        logging: false
+                    });
+
+                    canvas.toBlob((blob) => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'フローチャート.png';
+                        link.click();
+                        showMessage('フローチャートを画像としてダウンロードしました');
+                    });
+                } catch (error) {
+                    console.error('PNG出力エラー:', error);
+                    alert('画像の生成に失敗しました');
+                }
+            };
+
+            // 治療介入データCSV出力
+            const exportExerciseCSV = () => {
+                const exerciseData = patientData.currentExercise;
+                const caseData = patientData.caseAnalysis;
+                let csv = '\uFEFF項目,内容\n';
+
+                csv += `セッション日付,${exerciseData.sessionDate}\n`;
+                csv += `主な問題点,${exerciseData.mainProblems}\n`;
+                csv += `現在の機能レベル,${exerciseData.functionalLevel}\n`;
+                csv += `病態生理の理解,${exerciseData.pathophysiology}\n`;
+                csv += `エビデンスの確認,${exerciseData.evidenceBase}\n`;
+                csv += `解剖運動学の理解,${exerciseData.anatomyKinesiology}\n`;
+                csv += `何を改善するか,${exerciseData.targetImprovement}\n`;
+                csv += `どの動作で鍛えるか,${exerciseData.movementType}\n`;
+                csv += `負荷設定,${exerciseData.loadSetting}\n`;
+                csv += `頻度期間,${exerciseData.frequencyDuration}\n`;
+                csv += `運動療法の内容,${exerciseData.selectedExercise}\n`;
+                csv += `運動療法を選んだ理由,${exerciseData.exerciseRationale}\n`;
+                csv += `徒手療法の内容,${exerciseData.manualTherapy}\n`;
+                csv += `徒手療法を選んだ理由,${exerciseData.manualTherapyRationale}\n`;
+                csv += `物理療法の内容,${exerciseData.physicalTherapy}\n`;
+                csv += `物理療法を選んだ理由,${exerciseData.physicalTherapyRationale}\n`;
+                csv += `即時効果,${exerciseData.immediateEffect}\n`;
+                csv += `短期効果,${exerciseData.shortTermEffect}\n`;
+                csv += `長期効果,${exerciseData.longTermEffect}\n`;
+                csv += `データの見直し,${exerciseData.dataReview}\n`;
+                csv += `根拠の見直し,${exerciseData.warrantReview}\n`;
+                csv += `結論の修正,${exerciseData.claimModification}\n`;
+
+                // 記録セクション
+                csv += `実施した運動療法1,${caseData.exercise1}\n`;
+                csv += `実施した運動療法2,${caseData.exercise2}\n`;
+                csv += `実施した運動療法3,${caseData.exercise3}\n`;
+                csv += `効果判定_即時効果,${caseData.immediateEffect}\n`;
+                csv += `効果判定_短期効果,${caseData.shortTermEffect}\n`;
+                csv += `効果判定_長期効果,${caseData.longTermEffect}\n`;
+                csv += `うまくいったこと,${caseData.whatWorked}\n`;
+                csv += `うまくいかなかったこと,${caseData.whatDidntWork}\n`;
+                csv += `データ不足,${caseData.dataInsufficient}\n`;
+                csv += `根拠不明確,${caseData.warrantUnclear}\n`;
+                csv += `結論飛躍,${caseData.claimLeap}\n`;
+                csv += `追加すべき評価,${caseData.additionalEvaluation}\n`;
+                csv += `運動療法の変更点,${caseData.exerciseChanges}\n`;
+                csv += `患者との関わり方改善点,${caseData.patientInteraction}\n`;
+                csv += `得た学び,${caseData.learnings}\n`;
+                csv += `パターンとして蓄積できること,${caseData.patterns}\n`;
+                csv += `次の症例に活かせること,${caseData.nextApplication}\n`;
+
+                downloadCSV(csv, '治療介入データ.csv');
+                showMessage('治療介入データをCSVファイルとしてダウンロードしました');
+            };
+
+            // 症例分析データCSV読み込み
+            const importCaseAnalysisCSV = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split('\n');
+
+                        const updatedCaseAnalysis = { ...patientData.caseAnalysis };
+                        const treatmentPlans = [];
+                        let currentPlan = null;
+                        let currentOption = null;
+
+                        lines.forEach(line => {
+                            if (!line.trim()) return;
+
+                            const [key, ...valueParts] = line.split(',');
+                            const value = valueParts.join(',').trim().replace(/^"|"$/g, '');
+
+                            // 三角ロジック
+                            if (key === '三角ロジック_データ') updatedCaseAnalysis.triangleData = value;
+                            else if (key === '三角ロジック_根拠') updatedCaseAnalysis.triangleWarrant = value;
+                            else if (key === '三角ロジック_結論') updatedCaseAnalysis.triangleClaim = value;
+
+                            // 治療計画
+                            else if (key.match(/^治療計画(\d+)_問題点$/)) {
+                                if (currentPlan) {
+                                    treatmentPlans.push(currentPlan);
+                                }
+                                currentPlan = {
+                                    id: Date.now() + Math.random(),
+                                    problemNode: value,
+                                    treatmentGoal: '',
+                                    options: []
+                                };
+                            }
+                            else if (key.match(/^治療計画\d+_治療目標$/)) {
+                                if (currentPlan) currentPlan.treatmentGoal = value;
+                            }
+                            else if (key.match(/^治療計画\d+_選択肢(\d+)_名称$/)) {
+                                if (currentOption) {
+                                    currentPlan.options.push(currentOption);
+                                }
+                                currentOption = {
+                                    id: Date.now() + Math.random(),
+                                    name: value,
+                                    rationale: '',
+                                    priority: 'medium'
+                                };
+                            }
+                            else if (key.match(/^治療計画\d+_選択肢\d+_理由$/)) {
+                                if (currentOption) currentOption.rationale = value;
+                            }
+                            else if (key.match(/^治療計画\d+_選択肢\d+_優先順位$/)) {
+                                if (currentOption) currentOption.priority = value;
+                            }
+                        });
+
+                        // 最後の治療計画を追加
+                        if (currentOption) {
+                            currentPlan.options.push(currentOption);
+                        }
+                        if (currentPlan) {
+                            treatmentPlans.push(currentPlan);
+                        }
+
+                        updatedCaseAnalysis.treatmentPlans = treatmentPlans.length > 0 ? treatmentPlans : [{ id: Date.now(), problemNode: '', treatmentGoal: '', options: [] }];
+
+                        updateCaseAnalysis(updatedCaseAnalysis);
+                        showMessage('症例分析データを読み込みました');
+                        event.target.value = '';
+                    } catch (error) {
+                        console.error('CSV読み込みエラー:', error);
+                        alert('CSVファイルの読み込みに失敗しました');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            // 治療介入データCSV読み込み
+            const importExerciseCSV = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split('\n');
+
+                        const updatedExercise = { ...patientData.currentExercise };
+                        const updatedCaseAnalysis = { ...patientData.caseAnalysis };
+
+                        lines.forEach(line => {
+                            if (!line.trim()) return;
+
+                            const [key, ...valueParts] = line.split(',');
+                            const value = valueParts.join(',').trim().replace(/^"|"$/g, '');
+
+                            // 治療介入タブのフィールド
+                            if (key === 'セッション日付') updatedExercise.sessionDate = value;
+                            else if (key === '主な問題点') updatedExercise.mainProblems = value;
+                            else if (key === '現在の機能レベル') updatedExercise.functionalLevel = value;
+                            else if (key === '病態生理の理解') updatedExercise.pathophysiology = value;
+                            else if (key === 'エビデンスの確認') updatedExercise.evidenceBase = value;
+                            else if (key === '解剖運動学の理解') updatedExercise.anatomyKinesiology = value;
+                            else if (key === '何を改善するか') updatedExercise.targetImprovement = value;
+                            else if (key === 'どの動作で鍛えるか') updatedExercise.movementType = value;
+                            else if (key === '負荷設定') updatedExercise.loadSetting = value;
+                            else if (key === '頻度期間') updatedExercise.frequencyDuration = value;
+                            else if (key === '運動療法の内容') updatedExercise.selectedExercise = value;
+                            else if (key === '運動療法を選んだ理由') updatedExercise.exerciseRationale = value;
+                            else if (key === '徒手療法の内容') updatedExercise.manualTherapy = value;
+                            else if (key === '徒手療法を選んだ理由') updatedExercise.manualTherapyRationale = value;
+                            else if (key === '物理療法の内容') updatedExercise.physicalTherapy = value;
+                            else if (key === '物理療法を選んだ理由') updatedExercise.physicalTherapyRationale = value;
+                            else if (key === '即時効果') updatedExercise.immediateEffect = value;
+                            else if (key === '短期効果') updatedExercise.shortTermEffect = value;
+                            else if (key === '長期効果') updatedExercise.longTermEffect = value;
+                            else if (key === 'データの見直し') updatedExercise.dataReview = value;
+                            else if (key === '根拠の見直し') updatedExercise.warrantReview = value;
+                            else if (key === '結論の修正') updatedExercise.claimModification = value;
+
+                            // 記録セクション（症例分析から移動したフィールド）
+                            else if (key === '実施した運動療法1') updatedCaseAnalysis.exercise1 = value;
+                            else if (key === '実施した運動療法2') updatedCaseAnalysis.exercise2 = value;
+                            else if (key === '実施した運動療法3') updatedCaseAnalysis.exercise3 = value;
+                            else if (key === '効果判定_即時効果') updatedCaseAnalysis.immediateEffect = value;
+                            else if (key === '効果判定_短期効果') updatedCaseAnalysis.shortTermEffect = value;
+                            else if (key === '効果判定_長期効果') updatedCaseAnalysis.longTermEffect = value;
+                            else if (key === 'うまくいったこと') updatedCaseAnalysis.whatWorked = value;
+                            else if (key === 'うまくいかなかったこと') updatedCaseAnalysis.whatDidntWork = value;
+                            else if (key === 'データ不足') updatedCaseAnalysis.dataInsufficient = value;
+                            else if (key === '根拠不明確') updatedCaseAnalysis.warrantUnclear = value;
+                            else if (key === '結論飛躍') updatedCaseAnalysis.claimLeap = value;
+                            else if (key === '追加すべき評価') updatedCaseAnalysis.additionalEvaluation = value;
+                            else if (key === '運動療法の変更点') updatedCaseAnalysis.exerciseChanges = value;
+                            else if (key === '患者との関わり方改善点') updatedCaseAnalysis.patientInteraction = value;
+                            else if (key === '得た学び') updatedCaseAnalysis.learnings = value;
+                            else if (key === 'パターンとして蓄積できること') updatedCaseAnalysis.patterns = value;
+                            else if (key === '次の症例に活かせること') updatedCaseAnalysis.nextApplication = value;
+                        });
+
+                        updateCurrentExercise(updatedExercise);
+                        updateCaseAnalysis(updatedCaseAnalysis);
+                        showMessage('治療介入データを読み込みました');
+                        event.target.value = '';
+                    } catch (error) {
+                        console.error('CSV読み込みエラー:', error);
+                        alert('CSVファイルの読み込みに失敗しました');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            // 評価セッション追加
+            const addEvaluationSession = () => {
+                if (!patientData.currentEvaluation.sessionDate) {
+                    alert('セッション日付を入力してください');
+                    return;
+                }
+
+                setPatientData(prev => ({
+                    ...prev,
+                    evaluationSessions: [...prev.evaluationSessions, prev.currentEvaluation],
+                    currentEvaluation: {
+                        sessionDate: new Date().toISOString().split('T')[0],
+                        difficultMovement: '', compensatoryPattern: '', painLocation: '',
+                        romRestriction: '', muscleWeakness: '', coordination: '', balance: '',
+                        causal_whys: ['', '', ''], priority: '', hypothesis: ''
+                    }
+                }));
+
+                showMessage('評価セッションを保存しました！新しいセッションを開始できます');
+            };
+
+            // 運動療法セッション追加
+            const addExerciseSession = () => {
+                if (!patientData.currentExercise.sessionDate) {
+                    alert('セッション日付を入力してください');
+                    return;
+                }
+
+                setPatientData(prev => ({
+                    ...prev,
+                    exerciseSessions: [...prev.exerciseSessions, prev.currentExercise],
+                    currentExercise: {
+                        sessionDate: new Date().toISOString().split('T')[0],
+                        mainProblems: '', functionalLevel: '',
+                        pathophysiology: '', evidenceBase: '', anatomyKinesiology: '',
+                        targetImprovement: '', movementType: '', loadSetting: '', frequencyDuration: '',
+                        selectedExercise: '', exerciseRationale: '',
+                        immediateEffect: '', shortTermEffect: '', longTermEffect: '',
+                        dataReview: '', warrantReview: '', claimModification: ''
+                    }
+                }));
+
+                showMessage('運動療法セッションを保存しました！新しいセッションを開始できます');
+            };
+
+            // 過去セッション読み込み
+            const loadEvaluationSession = (index) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    currentEvaluation: prev.evaluationSessions[index]
+                }));
+                showMessage('過去の評価セッションを読み込みました');
+            };
+
+            const loadExerciseSession = (index) => {
+                setPatientData(prev => ({
+                    ...prev,
+                    currentExercise: prev.exerciseSessions[index]
+                }));
+                showMessage('過去の運動療法セッションを読み込みました');
+            };
+
+            // データ引き継ぎ
+            const inheritEvaluationToCase = () => {
+                const eval_data = patientData.currentEvaluation;
+
+                const dataItems = [];
+                if (eval_data.romRestriction) dataItems.push(`ROM制限: ${eval_data.romRestriction}`);
+                if (eval_data.muscleWeakness) dataItems.push(`筋力低下: ${eval_data.muscleWeakness}`);
+                if (eval_data.coordination) dataItems.push(`協調性: ${eval_data.coordination}`);
+                if (eval_data.balance) dataItems.push(`バランス: ${eval_data.balance}`);
+                if (eval_data.painLocation) dataItems.push(`疼痛: ${eval_data.painLocation}`);
+
+                const dataText = dataItems.join('\n');
+                const causalParts = (eval_data.causal_whys || []).filter(x => x);
+                const warrantText = causalParts.length > 0 ? causalParts.join(' → ') : '';
+                const claimText = eval_data.hypothesis || eval_data.priority || '';
+
+                setPatientData(prev => ({
+                    ...prev,
+                    caseAnalysis: {
+                        ...prev.caseAnalysis,
+                        triangleData: dataText,
+                        triangleWarrant: warrantText,
+                        triangleClaim: claimText
+                    }
+                }));
+
+                showMessage('評価データを症例分析タブに引き継ぎました！');
+                setShowInheritModal(false);
+            };
+
+            const inheritCaseToExercise = () => {
+                const caseData = patientData.caseAnalysis;
+                const eval_data = patientData.currentEvaluation;
+
+                setPatientData(prev => ({
+                    ...prev,
+                    currentExercise: {
+                        ...prev.currentExercise,
+                        mainProblems: caseData.triangleData || '',
+                        pathophysiology: caseData.triangleWarrant || '',
+                        targetImprovement: caseData.triangleClaim || '',
+                        selectedExercise: caseData.exercise1 || ''
+                    }
+                }));
+
+                showMessage('症例分析データを治療介入タブに引き継ぎました！');
+                setShowInheritModal(false);
+            };
+
+            const handleSave = () => {
+                if (!patientData.patientId) {
+                    alert('患者IDを入力してください');
+                    return;
+                }
+
+                const patients = [...savedPatients];
+                const idx = patients.findIndex(p => p.patientId === patientData.patientId);
+
+                if (idx >= 0) {
+                    patients[idx] = patientData;
+                } else {
+                    patients.push(patientData);
+                }
+
+                setSavedPatients(patients);
+                localStorage.setItem('savedPatients_v3', JSON.stringify(patients));
+
+                const dataStr = JSON.stringify(patientData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `患者_${patientData.patientId}_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+
+                showMessage('患者データを保存しました！');
+            };
+
+            const handleExportCSV = () => {
+                if (savedPatients.length === 0) {
+                    alert('保存されている患者データがありません');
+                    return;
+                }
+
+                const headers = ['患者ID', '作成日', '患者名', '年齢', '性別', '診断名', '主訴', '評価セッション数', '運動療法セッション数'];
+                const rows = savedPatients.map(p => [
+                    p.patientId||'', p.createdDate||'', p.basicInfo.name||'', p.basicInfo.age||'',
+                    p.basicInfo.gender||'', p.basicInfo.diagnosis||'', p.basicInfo.chiefComplaint||'',
+                    p.evaluationSessions?.length || 0, p.exerciseSessions?.length || 0
+                ].map(f => `"${String(f).replace(/"/g, '""')}"`));
+
+                const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+                const blob = new Blob([bom, csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `全患者データ_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+                URL.revokeObjectURL(url);
+
+                showMessage('CSVをエクスポートしました！');
+            };
+
+            const handleSearch = () => {
+                if (!searchId) {
+                    alert('検索する患者IDを入力してください');
+                    return;
+                }
+
+                const found = savedPatients.find(p => p.patientId === searchId);
+                if (found) {
+                    setPatientData(found);
+                    showMessage(`患者ID: ${searchId} を読み込みました`);
+                    setShowSearchPanel(false);
+                } else {
+                    alert(`患者ID: ${searchId} が見つかりませんでした`);
+                }
+            };
+
+            const handleLoad = (data) => {
+                setPatientData(data);
+                showMessage(`患者ID: ${data.patientId} を読み込みました`);
+                setShowSearchPanel(false);
+            };
+
+            const handleDelete = (id) => {
+                if (!confirm(`患者ID: ${id} を削除しますか？`)) return;
+                const updated = savedPatients.filter(p => p.patientId !== id);
+                setSavedPatients(updated);
+                localStorage.setItem('savedPatients_v3', JSON.stringify(updated));
+                showMessage('削除しました');
+            };
+
+            const handleClear = () => {
+                if (!confirm('すべての入力内容をクリアしますか?')) return;
+                const today = new Date().toISOString().split('T')[0];
+                setPatientData({
+                    patientId: '', createdDate: today,
+                    basicInfo: { name: '', age: '', gender: '', diagnosis: '', chiefComplaint: '', lifeBackground: '', goalsShort: '', goalsLong: '' },
+                    evaluationSessions: [],
+                    currentEvaluation: { sessionDate: today, difficultMovement: '', compensatoryPattern: '', painLocation: '', romRestriction: '', muscleWeakness: '', coordination: '', balance: '', causal_whys: ['', '', ''], priority: '', hypothesis: '' },
+                    exerciseSessions: [],
+                    currentExercise: { sessionDate: today, mainProblems: '', functionalLevel: '', pathophysiology: '', evidenceBase: '', anatomyKinesiology: '', targetImprovement: '', movementType: '', loadSetting: '', frequencyDuration: '', selectedExercise: '', exerciseRationale: '', manualTherapy: '', manualTherapyRationale: '', physicalTherapy: '', physicalTherapyRationale: '', immediateEffect: '', shortTermEffect: '', longTermEffect: '', dataReview: '', warrantReview: '', claimModification: '' },
+                    caseAnalysis: { cr1_q1: '', cr1_q1_reason: '', cr1_q2: '', cr1_q2_reason: '', cr1_q3: '', cr1_q3_reason: '', cr1_q4: '', cr1_q4_reason: '', cr1_reflection: '', cr2_q1: '', cr2_q1_reason: '', cr2_q2: '', cr2_q2_reason: '', cr2_q3: '', cr2_q3_reason: '', cr2_q4: '', cr2_q4_reason: '', cr2_reflection: '', cr3_q1: '', cr3_q1_reason: '', cr3_q2: '', cr3_q2_reason: '', cr3_q3: '', cr3_q3_reason: '', cr3_q4: '', cr3_q4_reason: '', cr3_q5: '', cr3_q5_reason: '', cr3_q6: '', cr3_q6_reason: '', cr3_q7: '', cr3_q7_reason: '', cr3_reflection: '', triangleData: '', triangleWarrant: '', triangleClaim: '', exercise1: '', exercise2: '', exercise3: '', immediateEffect: '', shortTermEffect: '', longTermEffect: '', whatWorked: '', whatDidntWork: '', dataInsufficient: false, warrantUnclear: false, claimLeap: false, additionalEvaluation: '', exerciseChanges: '', patientInteraction: '', learnings: '', patterns: '', nextApplication: '' }
+                });
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>臨床推論統合アプリ（最終版）</h1>
+                    </div>
+
+                    <div className="tabs">
+                        <button className={`tab ${activeTab === 'basic' ? 'active' : ''}`} onClick={() => setActiveTab('basic')}>
+                            📝 基本情報
+                        </button>
+                        <button className={`tab ${activeTab === 'eval' ? 'active' : ''}`} onClick={() => setActiveTab('eval')}>
+                            🔍 評価
+                        </button>
+                        <button className={`tab ${activeTab === 'case' ? 'active' : ''}`} onClick={() => setActiveTab('case')}>
+                            📋 症例分析
+                        </button>
+                        <button className={`tab ${activeTab === 'exercise' ? 'active' : ''}`} onClick={() => setActiveTab('exercise')}>
+                            💊 治療介入
+                        </button>
+                    </div>
+
+                    <div className="content">
+                        {activeTab === 'basic' && (
+                            <BasicInfoTab
+                                patientData={patientData}
+                                setPatientData={setPatientData}
+                                updateBasicInfo={updateBasicInfo}
+                            />
+                        )}
+                        {activeTab === 'eval' && (
+                            <EvaluationTab
+                                patientData={patientData}
+                                updateCurrentEvaluation={updateCurrentEvaluation}
+                                addEvaluationSession={addEvaluationSession}
+                                loadEvaluationSession={loadEvaluationSession}
+                                inheritToCase={inheritEvaluationToCase}
+                                exportEvaluationCSV={exportEvaluationCSV}
+                                importEvaluationCSV={importEvaluationCSV}
+                            />
+                        )}
+                        {activeTab === 'case' && (
+                            <CaseAnalysisTab
+                                patientData={patientData}
+                                updateCaseAnalysis={updateCaseAnalysis}
+                                inheritToExercise={inheritCaseToExercise}
+                                addFlowchartHypothesis={addFlowchartHypothesis}
+                                removeFlowchartHypothesis={removeFlowchartHypothesis}
+                                updateFlowchartHypothesis={updateFlowchartHypothesis}
+                                generateFlowchart={generateFlowchart}
+                                addTreatmentPlan={addTreatmentPlan}
+                                removeTreatmentPlan={removeTreatmentPlan}
+                                updateTreatmentPlan={updateTreatmentPlan}
+                                addTreatmentOption={addTreatmentOption}
+                                removeTreatmentOption={removeTreatmentOption}
+                                updateTreatmentOption={updateTreatmentOption}
+                                inheritTreatmentToExercise={inheritTreatmentToExercise}
+                                exportCaseAnalysisCSV={exportCaseAnalysisCSV}
+                                importCaseAnalysisCSV={importCaseAnalysisCSV}
+                                exportFlowchartPNG={exportFlowchartPNG}
+                            />
+                        )}
+                        {activeTab === 'exercise' && (
+                            <ExerciseTab
+                                patientData={patientData}
+                                updateCurrentExercise={updateCurrentExercise}
+                                addExerciseSession={addExerciseSession}
+                                loadExerciseSession={loadExerciseSession}
+                                updateCaseAnalysis={updateCaseAnalysis}
+                                exportExerciseCSV={exportExerciseCSV}
+                                importExerciseCSV={importExerciseCSV}
+                            />
+                        )}
+
+                        <div className="button-group">
+                            <button className="btn btn-primary" onClick={handleSave}>💾 保存</button>
+                            <button className="btn btn-success" onClick={handleExportCSV}>📊 CSV出力</button>
+                            <button className="btn btn-secondary" onClick={() => setShowSearchPanel(true)}>🔍 検索</button>
+                            <button className="btn btn-secondary" onClick={handleClear}>🗑️ クリア</button>
+                        </div>
+                    </div>
+
+                    {/* 自動引き継ぎ確認モーダル */}
+                    {showInheritModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h2 className="modal-title">データを引き継ぎますか？</h2>
+                                    <p className="modal-text">
+                                        前のタブで入力したデータがあります。このタブに自動で引き継ぎますか？
+                                    </p>
+                                </div>
+                                <div className="modal-actions">
+                                    <button className="btn btn-secondary btn-small" onClick={() => setShowInheritModal(false)}>
+                                        いいえ
+                                    </button>
+                                    <button className="btn btn-primary btn-small" onClick={() => inheritAction && inheritAction()}>
+                                        はい、引き継ぐ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 検索パネル */}
+                    {showSearchPanel && (
+                        <div className="search-panel" onClick={() => setShowSearchPanel(false)}>
+                            <div className="search-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="search-header">
+                                    <h2 className="search-title">患者を検索</h2>
+                                    <button className="close-btn" onClick={() => setShowSearchPanel(false)}>×</button>
+                                </div>
+                                <div className="search-box">
+                                    <input type="text" className="search-input" placeholder="患者IDを入力" value={searchId} onChange={(e) => setSearchId(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSearch()} />
+                                    <button className="btn-search" onClick={handleSearch}>検索</button>
+                                </div>
+                                <div className="case-list">
+                                    <h3 style={{marginBottom: '15px', color: '#4a5568', fontSize: '16px'}}>
+                                        保存済み患者（{savedPatients.length}名）
+                                    </h3>
+                                    {savedPatients.length === 0 ? (
+                                        <p style={{color: '#a0aec0', textAlign: 'center', padding: '20px'}}>保存されている患者がいません</p>
+                                    ) : (
+                                        savedPatients.slice().reverse().map((patient, index) => (
+                                            <div key={index} className="case-item">
+                                                <div className="case-info">
+                                                    <div className="case-id">患者ID: {patient.patientId}</div>
+                                                    <div className="case-date">
+                                                        {patient.createdDate} | {patient.basicInfo.name} ({patient.basicInfo.age}歳, {patient.basicInfo.gender})
+                                                        {patient.evaluationSessions?.length > 0 && ` | 評価${patient.evaluationSessions.length}回`}
+                                                    </div>
+                                                </div>
+                                                <div className="case-actions">
+                                                    <button className="btn-small btn-load" onClick={() => handleLoad(patient)}>読込</button>
+                                                    <button className="btn-small btn-delete" onClick={() => handleDelete(patient.patientId)}>削除</button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showToast && <div className="toast">✓ {toastMessage}</div>}
+                </div>
+            );
+        }
+
+        // 基本情報タブ（変更なし）
+        function BasicInfoTab({ patientData, setPatientData, updateBasicInfo }) {
+            return (
+                <>
+                    <div className="id-section">
+                        <h2 className="section-title">患者ID <span className="info-badge">全タブ共通</span></h2>
+                        <div className="id-row">
+                            <div className="form-group">
+                                <label className="form-label">患者ID（必須）</label>
+                                <input type="text" className="form-input" value={patientData.patientId} onChange={(e) => setPatientData(prev => ({...prev, patientId: e.target.value}))} placeholder="例：PT-2025-001" />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">初回評価日</label>
+                                <input type="date" className="form-input" value={patientData.createdDate} onChange={(e) => setPatientData(prev => ({...prev, createdDate: e.target.value}))} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="common-info-section">
+                        <h2 className="section-title">基本情報 <span className="info-badge">全タブで共有</span></h2>
+                        <div className="id-row">
+                            <div className="form-group">
+                                <label className="form-label">患者名 / イニシャル</label>
+                                <input type="text" className="form-input" value={patientData.basicInfo.name} onChange={(e) => updateBasicInfo('name', e.target.value)} placeholder="例：A.T." />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">年齢</label>
+                                <input type="text" className="form-input" value={patientData.basicInfo.age} onChange={(e) => updateBasicInfo('age', e.target.value)} placeholder="例：65" />
+                            </div>
+                        </div>
+                        <div className="id-row">
+                            <div className="form-group">
+                                <label className="form-label">性別</label>
+                                <select className="form-select" value={patientData.basicInfo.gender} onChange={(e) => updateBasicInfo('gender', e.target.value)}>
+                                    <option value="">選択してください</option>
+                                    <option value="男性">男性</option>
+                                    <option value="女性">女性</option>
+                                    <option value="その他">その他</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">診断名</label>
+                                <input type="text" className="form-input" value={patientData.basicInfo.diagnosis} onChange={(e) => updateBasicInfo('diagnosis', e.target.value)} placeholder="例：変形性膝関節症" />
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">主訴（患者の言葉で）</label>
+                            <textarea className="form-textarea" value={patientData.basicInfo.chiefComplaint} onChange={(e) => updateBasicInfo('chiefComplaint', e.target.value)} placeholder="例：歩くと右膝が痛い" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">生活背景（家族構成・仕事・趣味）</label>
+                            <textarea className="form-textarea" value={patientData.basicInfo.lifeBackground} onChange={(e) => updateBasicInfo('lifeBackground', e.target.value)} placeholder="家族構成、仕事、趣味などを記載" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">短期目標（1〜2週間）</label>
+                            <input type="text" className="form-input" value={patientData.basicInfo.goalsShort} onChange={(e) => updateBasicInfo('goalsShort', e.target.value)} placeholder="例：痛みなく家の中を歩けるようになりたい" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">長期目標（1〜3ヶ月）</label>
+                            <input type="text" className="form-input" value={patientData.basicInfo.goalsLong} onChange={(e) => updateBasicInfo('goalsLong', e.target.value)} placeholder="例：趣味のテニスに復帰したい" />
+                        </div>
+                    </div>
+
+                    <div className="section" style={{background: '#e8f5e9', borderLeftColor: '#4caf50'}}>
+                        <h2 className="section-title" style={{color: '#2e7d32'}}>💡 使い方ガイド（最終版）</h2>
+                        <p style={{marginBottom: '10px', lineHeight: '1.6'}}>
+                            この基本情報は<strong>すべてのタブで共有</strong>されます。
+                        </p>
+                        <ol style={{marginLeft: '20px', lineHeight: '1.8'}}>
+                            <li>まず基本情報を入力</li>
+                            <li>「評価」タブで評価結果を入力し、セッションとして保存</li>
+                            <li>「症例分析」タブに移動すると<strong>自動で引き継ぎを確認</strong></li>
+                            <li>「運動療法」タブで具体的な運動プログラムを立案</li>
+                        </ol>
+                        <p style={{marginTop: '15px', padding: '10px', background: 'white', borderRadius: '8px', fontSize: '14px'}}>
+                            <strong>機能：</strong><br/>
+                            ✅ 評価・症例分析・治療介入を一貫管理<br/>
+                            ✅ AIによるフローチャート自動生成<br/>
+                            ✅ タブ間の自動引き継ぎ機能
+                        </p>
+                    </div>
+                </>
+            );
+        }
+
+        // 評価タブ（セッション機能追加）
+        function EvaluationTab({ patientData, updateCurrentEvaluation, addEvaluationSession, loadEvaluationSession, inheritToCase, exportEvaluationCSV, importEvaluationCSV }) {
+            const [showHistory, setShowHistory] = useState(true);
+
+            return (
+                <>
+                    <div className="common-info-section">
+                        <h2 className="section-title">患者情報</h2>
+                        <p><strong>患者ID:</strong> {patientData.patientId || '（未入力）'}</p>
+                        <p><strong>患者名:</strong> {patientData.basicInfo.name || '（未入力）'} ({patientData.basicInfo.age}歳, {patientData.basicInfo.gender})</p>
+                        <p><strong>診断名:</strong> {patientData.basicInfo.diagnosis || '（未入力）'}</p>
+                    </div>
+
+                    {/* セッション履歴 */}
+                    {patientData.evaluationSessions.length > 0 && (
+                        <div className="session-history">
+                            <h3 style={{marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}} onClick={() => setShowHistory(!showHistory)}>
+                                📊 評価履歴（{patientData.evaluationSessions.length}回）
+                                <span style={{fontSize: '20px'}}>{showHistory ? '▼' : '▶'}</span>
+                            </h3>
+                            {showHistory && patientData.evaluationSessions.map((session, index) => (
+                                <div key={index} className="session-item" onClick={() => loadEvaluationSession(index)}>
+                                    <div className="session-header">
+                                        <span className="session-date">第{index + 1}回 - {session.sessionDate}</span>
+                                    </div>
+                                    <div className="session-preview">
+                                        {session.romRestriction || session.muscleWeakness || '（データなし）'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="section">
+                        <div className="section-title">
+                            現在のセッション <span className="session-badge">編集中</span>
+                            <button className="btn btn-success btn-small" onClick={addEvaluationSession} style={{marginLeft: 'auto'}}>
+                                ➕ セッションを保存して新規作成
+                            </button>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">セッション日付</label>
+                            <input type="date" className="form-input" value={patientData.currentEvaluation.sessionDate} onChange={(e) => updateCurrentEvaluation('sessionDate', e.target.value)} />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">ステップ1：動作評価</h2>
+                        <div className="form-group">
+                            <label className="form-label">困難な動作の特定</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.difficultMovement} onChange={(e) => updateCurrentEvaluation('difficultMovement', e.target.value)} placeholder="立ち上がり/歩行/階段/ADL動作のうち、どの動作で困難があるか？" />
+                            <div className="help-text">例：歩行時に右膝痛、階段下りが困難</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">代償動作の確認</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.compensatoryPattern} onChange={(e) => updateCurrentEvaluation('compensatoryPattern', e.target.value)} placeholder="代償パターンは？どの相で問題があるか？" />
+                            <div className="help-text">例：立脚期にラテラルスラストあり</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">疼痛の有無（VAS/NRS）</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.painLocation} onChange={(e) => updateCurrentEvaluation('painLocation', e.target.value)} placeholder="どの動作・どの部位で疼痛があるか？" />
+                            <div className="help-text">例：歩行時VAS 7/10・右膝内側</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">ステップ2：機能障害評価</h2>
+                        <div className="form-group">
+                            <label className="form-label">ROM制限の評価</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.romRestriction} onChange={(e) => updateCurrentEvaluation('romRestriction', e.target.value)} placeholder="どの関節にどの程度の制限があるか？（角度）" />
+                            <div className="help-text">例：右膝伸展-10度</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">筋力低下の評価（MMT/筋力測定）</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.muscleWeakness} onChange={(e) => updateCurrentEvaluation('muscleWeakness', e.target.value)} placeholder="どの筋肉が弱いか？（MMT値）" />
+                            <div className="help-text">例：大腿四頭筋MMT3・内側広筋萎縮あり</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">協調性の評価</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.coordination} onChange={(e) => updateCurrentEvaluation('coordination', e.target.value)} placeholder="動作がぎこちない/タイミングが悪い？" />
+                            <div className="help-text">例：立ち上がり時に膝がぶれる</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">バランスの評価</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.balance} onChange={(e) => updateCurrentEvaluation('balance', e.target.value)} placeholder="バランス能力は十分か？（秒数）" />
+                            <div className="help-text">例：片脚立位5秒で不安定</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">ステップ3：因果関係分析</h2>
+                        <div className="form-group">
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                                <label className="form-label" style={{marginBottom: 0}}>機能→動作の関連（「なぜ？」を繰り返す）</label>
+                                <button
+                                    className="btn btn-success btn-small"
+                                    onClick={() => {
+                                        const newWhys = [...patientData.currentEvaluation.causal_whys, ''];
+                                        updateCurrentEvaluation('causal_whys', newWhys);
+                                    }}
+                                    type="button"
+                                >
+                                    ➕ なぜ？を追加
+                                </button>
+                            </div>
+                            <div className="help-text" style={{marginBottom: '10px'}}>各入力欄に分けて記入してください。自動で矢印（→）がつながります</div>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                                {patientData.currentEvaluation.causal_whys.map((why, index) => (
+                                    <React.Fragment key={index}>
+                                        <div style={{display: 'flex', gap: '10px', alignItems: 'flex-start'}}>
+                                            <div style={{flex: 1}}>
+                                                <label className="form-label" style={{fontSize: '13px', color: '#64b5f6'}}>
+                                                    なぜ{index + 1}
+                                                    {index === 0 && ' （表面的な問題）'}
+                                                    {index === patientData.currentEvaluation.causal_whys.length - 1 && index > 0 && ' （根本原因）'}
+                                                    {index > 0 && index < patientData.currentEvaluation.causal_whys.length - 1 && ' （より深い原因）'}
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={why}
+                                                    onChange={(e) => {
+                                                        const newWhys = [...patientData.currentEvaluation.causal_whys];
+                                                        newWhys[index] = e.target.value;
+                                                        updateCurrentEvaluation('causal_whys', newWhys);
+                                                    }}
+                                                    placeholder={index === 0 ? '例：歩行時に右膝痛がある' : index === patientData.currentEvaluation.causal_whys.length - 1 ? '例：内側広筋の反射性萎縮' : '例：立脚期に膝が不安定'}
+                                                />
+                                            </div>
+                                            {patientData.currentEvaluation.causal_whys.length > 1 && (
+                                                <button
+                                                    className="btn btn-secondary btn-small"
+                                                    onClick={() => {
+                                                        const newWhys = patientData.currentEvaluation.causal_whys.filter((_, i) => i !== index);
+                                                        updateCurrentEvaluation('causal_whys', newWhys);
+                                                    }}
+                                                    type="button"
+                                                    style={{marginTop: '28px', padding: '8px 12px'}}
+                                                >
+                                                    ✕
+                                                </button>
+                                            )}
+                                        </div>
+                                        {index < patientData.currentEvaluation.causal_whys.length - 1 && (
+                                            <div style={{textAlign: 'center', color: '#64b5f6', fontWeight: 'bold', fontSize: '18px'}}>↓</div>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                            {patientData.currentEvaluation.causal_whys.filter(x => x).length > 0 && (
+                                <div style={{marginTop: '15px', padding: '12px', background: '#e3f2fd', borderRadius: '8px', borderLeft: '3px solid #64b5f6'}}>
+                                    <strong style={{color: '#1976d2'}}>因果関係：</strong>
+                                    <span style={{color: '#424242'}}>
+                                        {patientData.currentEvaluation.causal_whys.filter(x => x).join(' → ')}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">優先順位の決定</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.priority} onChange={(e) => updateCurrentEvaluation('priority', e.target.value)} placeholder="どの問題を最優先で解決すべきか？患者の目標との照合" />
+                            <div className="help-text">例：第1優先：内側広筋筋力低下</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">仮説の生成（三角ロジック活用）</label>
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.hypothesis} onChange={(e) => updateCurrentEvaluation('hypothesis', e.target.value)} placeholder="データ → 根拠 → 結論" style={{minHeight: '120px'}} />
+                            <div className="help-text">例：内側広筋MMT3→反射性萎縮→選択的トレーニング必要</div>
+                        </div>
+                    </div>
+
+                    <div className="button-group">
+                        <button className="btn btn-info" onClick={exportEvaluationCSV} style={{background: '#3b82f6'}}>
+                            📥 評価データをCSV出力
+                        </button>
+                        <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer', margin: 0}}>
+                            📂 評価CSVを読み込む
+                            <input type="file" accept=".csv" onChange={importEvaluationCSV} style={{display: 'none'}} />
+                        </label>
+                        <button className="btn btn-warning" onClick={inheritToCase}>
+                            ➡️ 手動で症例分析タブに引き継ぐ
+                        </button>
+                    </div>
+                </>
+            );
+        }
+
+        // 治療介入タブ（セッション機能追加）
+        function ExerciseTab({ patientData, updateCurrentExercise, addExerciseSession, loadExerciseSession, updateCaseAnalysis, exportExerciseCSV, importExerciseCSV }) {
+            const [showHistory, setShowHistory] = useState(true);
+
+            return (
+                <>
+                    <div className="common-info-section">
+                        <h2 className="section-title">患者情報</h2>
+                        <p><strong>患者ID:</strong> {patientData.patientId || '（未入力）'}</p>
+                        <p><strong>患者名:</strong> {patientData.basicInfo.name || '（未入力）'} ({patientData.basicInfo.age}歳, {patientData.basicInfo.gender})</p>
+                        <p><strong>目標:</strong> 短期={patientData.basicInfo.goalsShort} / 長期={patientData.basicInfo.goalsLong}</p>
+                    </div>
+
+                    {/* セッション履歴 */}
+                    {patientData.exerciseSessions.length > 0 && (
+                        <div className="session-history">
+                            <h3 style={{marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}} onClick={() => setShowHistory(!showHistory)}>
+                                📊 運動療法履歴（{patientData.exerciseSessions.length}回）
+                                <span style={{fontSize: '20px'}}>{showHistory ? '▼' : '▶'}</span>
+                            </h3>
+                            {showHistory && patientData.exerciseSessions.map((session, index) => (
+                                <div key={index} className="session-item" onClick={() => loadExerciseSession(index)}>
+                                    <div className="session-header">
+                                        <span className="session-date">第{index + 1}回 - {session.sessionDate}</span>
+                                    </div>
+                                    <div className="session-preview">
+                                        {session.selectedExercise || session.targetImprovement || '（データなし）'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="section">
+                        <div className="section-title">
+                            現在のセッション <span className="session-badge">編集中</span>
+                            <button className="btn btn-success btn-small" onClick={addExerciseSession} style={{marginLeft: 'auto'}}>
+                                ➕ セッションを保存して新規作成
+                            </button>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">セッション日付</label>
+                            <input type="date" className="form-input" value={patientData.currentExercise.sessionDate} onChange={(e) => updateCurrentExercise('sessionDate', e.target.value)} />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">データ収集：評価結果の整理</h2>
+                        <div className="form-group">
+                            <label className="form-label">主な問題点は？</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.mainProblems} onChange={(e) => updateCurrentExercise('mainProblems', e.target.value)} placeholder="ROM制限/筋力低下/協調性低下/バランス低下/持久力低下" />
+                            <div className="help-text">例：右膝ROM制限（伸展-10度）、大腿四頭筋MMT3</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">現在の機能レベルは？</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.functionalLevel} onChange={(e) => updateCurrentExercise('functionalLevel', e.target.value)} placeholder="ADL自立度・歩行能力・疼痛レベル" />
+                            <div className="help-text">例：ADL自立、歩行時VAS 7/10</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">根拠の確認</h2>
+                        <div className="form-group">
+                            <label className="form-label">病態生理の理解</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.pathophysiology} onChange={(e) => updateCurrentExercise('pathophysiology', e.target.value)} placeholder="なぜその問題が起きているか？（反射性萎縮/代償パターン/廃用）" />
+                            <div className="help-text">例：疼痛による反射性抑制→内側広筋萎縮</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">エビデンスの確認</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.evidenceBase} onChange={(e) => updateCurrentExercise('evidenceBase', e.target.value)} placeholder="この疾患に有効な運動療法は？（ガイドライン・論文）" />
+                            <div className="help-text">例：変形性膝関節症に対する大腿四頭筋訓練（推奨グレードA）</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">解剖・運動学の理解</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.anatomyKinesiology} onChange={(e) => updateCurrentExercise('anatomyKinesiology', e.target.value)} placeholder="どの筋肉・関節にアプローチすべきか？" />
+                            <div className="help-text">例：内側広筋（膝蓋骨の安定性に重要）</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">結論：治療介入の選択</h2>
+                        <div className="form-group">
+                            <label className="form-label">何を改善するか？</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.targetImprovement} onChange={(e) => updateCurrentExercise('targetImprovement', e.target.value)} placeholder="ROM/筋力/協調性/持久力のどれを優先？" />
+                            <div className="help-text">例：第1優先：筋力向上（内側広筋）</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">どの動作で鍛えるか？</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.movementType} onChange={(e) => updateCurrentExercise('movementType', e.target.value)} placeholder="OKC（開放運動連鎖）/CKC（閉鎖運動連鎖）/実動作？" />
+                            <div className="help-text">例：OKCで選択的強化→CKCで機能的強化</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">負荷設定は？</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.loadSetting} onChange={(e) => updateCurrentExercise('loadSetting', e.target.value)} placeholder="低負荷高頻度/高負荷低頻度/段階的負荷増加？" />
+                            <div className="help-text">例：低負荷高頻度（10-15回×3セット）から開始</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">頻度・期間は？</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.frequencyDuration} onChange={(e) => updateCurrentExercise('frequencyDuration', e.target.value)} placeholder="週何回？何週間継続？" />
+                            <div className="help-text">例：週3回、4週間継続</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">💪 運動療法</h2>
+                        <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
+                            <strong>💡 臨床推論のポイント：</strong> この問題に対して運動療法が最適なのか？徒手療法や物理療法と比較して検討しましょう
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">具体的な運動療法の内容</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.selectedExercise} onChange={(e) => updateCurrentExercise('selectedExercise', e.target.value)} placeholder="運動名、方法、負荷、セット数など" style={{minHeight: '120px'}} />
+                            <div className="help-text">例：股関節伸展制限に対して → 大殿筋の求心性収縮（相反神経抑制で腸腰筋の柔軟性改善）</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">なぜ運動療法を選んだのか？（他の方法との比較）</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.exerciseRationale} onChange={(e) => updateCurrentExercise('exerciseRationale', e.target.value)} placeholder="徒手療法や物理療法と比較して、なぜ運動療法が最適なのか？" style={{minHeight: '120px'}} />
+                            <div className="help-text">例：徒手療法（ストレッチ）も可能だが、相反神経抑制を利用することで能動的な可動域改善が期待でき、患者自身でも継続可能</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">🤲 徒手療法（マニュアルセラピー）</h2>
+                        <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
+                            <strong>💡 臨床推論のポイント：</strong> この問題に対して徒手療法が最適なのか？運動療法や物理療法と比較して検討しましょう
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">具体的な徒手療法の内容</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.manualTherapy} onChange={(e) => updateCurrentExercise('manualTherapy', e.target.value)} placeholder="関節モビライゼーション、筋膜リリース、ストレッチング、マッサージなど" style={{minHeight: '120px'}} />
+                            <div className="help-text">例：股関節伸展制限に対して → 腸腰筋の静的ストレッチング（30秒×3セット）</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">なぜ徒手療法を選んだのか？（他の方法との比較）</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.manualTherapyRationale} onChange={(e) => updateCurrentExercise('manualTherapyRationale', e.target.value)} placeholder="運動療法や物理療法と比較して、なぜ徒手療法が最適なのか？" style={{minHeight: '120px'}} />
+                            <div className="help-text">例：運動療法（相反神経抑制）も可能だが、筋の短縮が著明なため、まず直接的なストレッチで筋長を改善してから運動療法に移行する方が効果的</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">⚡ 物理療法</h2>
+                        <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
+                            <strong>💡 臨床推論のポイント：</strong> この問題に対して物理療法が最適なのか？運動療法や徒手療法と比較して検討しましょう
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">具体的な物理療法の内容</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.physicalTherapy} onChange={(e) => updateCurrentExercise('physicalTherapy', e.target.value)} placeholder="温熱療法、寒冷療法、電気刺激療法、超音波療法など" style={{minHeight: '120px'}} />
+                            <div className="help-text">例：股関節伸展制限に対して → ホットパック前処置後、ストレッチング実施</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">なぜ物理療法を選んだのか？（他の方法との比較）</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.physicalTherapyRationale} onChange={(e) => updateCurrentExercise('physicalTherapyRationale', e.target.value)} placeholder="運動療法や徒手療法と比較して、なぜ物理療法が最適なのか？" style={{minHeight: '120px'}} />
+                            <div className="help-text">例：単独では効果限定的だが、徒手療法の前処置として温熱により筋の伸張性を高めることで、ストレッチの効果を最大化できる</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">効果判定</h2>
+                        <div className="form-group">
+                            <label className="form-label">即時効果（治療直後の変化）</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.immediateEffect} onChange={(e) => updateCurrentExercise('immediateEffect', e.target.value)} placeholder="ROM改善/疼痛軽減/動作の質向上？" />
+                            <div className="help-text">例：膝伸展ROM -5度に改善、疼痛VAS 5/10</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">短期効果（1-2週間後）</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.shortTermEffect} onChange={(e) => updateCurrentExercise('shortTermEffect', e.target.value)} placeholder="筋力向上/持久力向上/ADL改善？" />
+                            <div className="help-text">例：大腿四頭筋MMT4に向上、歩行時痛軽減</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">長期効果（4週間以降）</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.longTermEffect} onChange={(e) => updateCurrentExercise('longTermEffect', e.target.value)} placeholder="目標達成度は？生活の質は向上したか？" />
+                            <div className="help-text">例：痛みなく30分歩行可能、短期目標達成</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">仮説修正（効果が出ない場合）</h2>
+                        <div className="form-group">
+                            <label className="form-label">データの見直し</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.dataReview} onChange={(e) => updateCurrentExercise('dataReview', e.target.value)} placeholder="「データ」は十分だったか？評価漏れはないか？" />
+                            <div className="help-text">例：股関節の可動域評価が不足していた</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">根拠の見直し</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.warrantReview} onChange={(e) => updateCurrentExercise('warrantReview', e.target.value)} placeholder="「根拠」は適切だったか？別の病態の可能性は？" />
+                            <div className="help-text">例：単純な筋力低下ではなく、神経的な問題の可能性</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">結論（介入選択）の修正</label>
+                            <textarea className="form-textarea" value={patientData.currentExercise.claimModification} onChange={(e) => updateCurrentExercise('claimModification', e.target.value)} placeholder="「介入選択」を変更すべきか？負荷設定を変えるか？" />
+                            <div className="help-text">例：OKCからCKCへ変更、より機能的な動作練習を追加</div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">実施した運動療法（記録）</h2>
+                        <div className="form-group">
+                            <label className="form-label">運動療法1</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.exercise1} onChange={(e) => updateCaseAnalysis('exercise1', e.target.value)} placeholder="運動名・目的・負荷設定・頻度" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">運動療法2</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.exercise2} onChange={(e) => updateCaseAnalysis('exercise2', e.target.value)} placeholder="運動名・目的・負荷設定・頻度" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">運動療法3</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.exercise3} onChange={(e) => updateCaseAnalysis('exercise3', e.target.value)} placeholder="運動名・目的・負荷設定・頻度" />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">効果判定（記録）</h2>
+                        <div className="form-group">
+                            <label className="form-label">即時効果（治療直後の変化）</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.immediateEffect} onChange={(e) => updateCaseAnalysis('immediateEffect', e.target.value)} placeholder="ROM・疼痛・動作の質" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">短期効果（1-2週間後）</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.shortTermEffect} onChange={(e) => updateCaseAnalysis('shortTermEffect', e.target.value)} placeholder="筋力・持久力・ADLの変化" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">長期効果（4週間以降）</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.longTermEffect} onChange={(e) => updateCaseAnalysis('longTermEffect', e.target.value)} placeholder="目標達成度・生活の質の向上" />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">振り返り</h2>
+                        <div className="form-group">
+                            <label className="form-label">うまくいったこと（なぜうまくいったのか？）</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.whatWorked} onChange={(e) => updateCaseAnalysis('whatWorked', e.target.value)} placeholder="成功した点とその理由" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">うまくいかなかったこと（なぜうまくいかなかったのか？）</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.whatDidntWork} onChange={(e) => updateCaseAnalysis('whatDidntWork', e.target.value)} placeholder="課題となった点とその理由" />
+                        </div>
+                        <div className="subsection">
+                            <h3 className="subsection-title">問題の原因分析</h3>
+                            <div className="cr-item">
+                                <label className="checkbox-label"><input type="checkbox" checked={patientData.caseAnalysis.dataInsufficient} onChange={(e) => updateCaseAnalysis('dataInsufficient', e.target.checked)} /> データ不足（評価が不十分だったか？）</label>
+                            </div>
+                            <div className="cr-item">
+                                <label className="checkbox-label"><input type="checkbox" checked={patientData.caseAnalysis.warrantUnclear} onChange={(e) => updateCaseAnalysis('warrantUnclear', e.target.checked)} /> 根拠不明確（根拠があいまいだったか？）</label>
+                            </div>
+                            <div className="cr-item">
+                                <label className="checkbox-label"><input type="checkbox" checked={patientData.caseAnalysis.claimLeap} onChange={(e) => updateCaseAnalysis('claimLeap', e.target.checked)} /> 結論飛躍（結論が論理的でなかったか？）</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">次回改善点</h2>
+                        <div className="form-group">
+                            <label className="form-label">同じ症例が来たら何を変えるか？（評価で追加すべき項目）</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.additionalEvaluation} onChange={(e) => updateCaseAnalysis('additionalEvaluation', e.target.value)} placeholder="追加すべき評価項目" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">運動療法の変更点</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.exerciseChanges} onChange={(e) => updateCaseAnalysis('exerciseChanges', e.target.value)} placeholder="変更・改善すべき運動療法" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">患者との関わり方で改善すべき点</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.patientInteraction} onChange={(e) => updateCaseAnalysis('patientInteraction', e.target.value)} placeholder="コミュニケーションや関わり方の改善点" />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">学んだこと</h2>
+                        <div className="form-group">
+                            <label className="form-label">この症例から得た学び</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.learnings} onChange={(e) => updateCaseAnalysis('learnings', e.target.value)} placeholder="今回の症例から学んだこと" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">パターンとして蓄積できること</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.patterns} onChange={(e) => updateCaseAnalysis('patterns', e.target.value)} placeholder="一般化できるパターンや原則" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">次の症例に活かせること</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.nextApplication} onChange={(e) => updateCaseAnalysis('nextApplication', e.target.value)} placeholder="今後の症例で応用できる知見" />
+                        </div>
+                    </div>
+
+                    <div className="button-group">
+                        <button className="btn btn-info" onClick={exportExerciseCSV} style={{background: '#3b82f6'}}>
+                            📥 治療介入データをCSV出力
+                        </button>
+                        <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer'}}>
+                            📂 治療介入データをCSV読み込み
+                            <input type="file" accept=".csv" onChange={importExerciseCSV} style={{display: 'none'}} />
+                        </label>
+                    </div>
+                </>
+            );
+        }
+
+        // フローチャートコンポーネント
+        function Flowchart({ data }) {
+            const buildTree = (nodes) => {
+                const nodeMap = new Map();
+                const roots = [];
+
+                nodes.forEach(node => {
+                    nodeMap.set(node.id, { ...node, children: [] });
+                });
+
+                nodes.forEach(node => {
+                    if (node.parentId && nodeMap.has(node.parentId)) {
+                        const parent = nodeMap.get(node.parentId);
+                        const child = nodeMap.get(node.id);
+                        if (parent && child) {
+                            parent.children.push(child);
+                        }
+                    } else {
+                        const rootNode = nodeMap.get(node.id);
+                        if (rootNode) {
+                            roots.push(rootNode);
+                        }
+                    }
+                });
+
+                return roots;
+            };
+
+            const RenderNode = ({ node }) => {
+                const isProblem = node.type === 'problem';
+                const hasChildren = node.children && node.children.length > 0;
+
+                return (
+                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                        <div style={{
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: isProblem ? '2px solid #f87171' : '2px solid #60a5fa',
+                            backgroundColor: isProblem ? '#fee2e2' : '#dbeafe',
+                            color: isProblem ? '#7f1d1d' : '#1e3a8a',
+                            fontWeight: '500',
+                            minWidth: '180px',
+                            maxWidth: '300px',
+                            textAlign: 'center',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}>
+                            <p style={{fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', color: isProblem ? '#f87171' : '#60a5fa'}}>
+                                {isProblem ? '仮説' : '評価所見'}
+                            </p>
+                            <p>{node.label}</p>
+                        </div>
+
+                        {hasChildren && (
+                            <div style={{marginTop: '24px', display: 'flex', justifyContent: 'center', position: 'relative'}}>
+                                <div style={{position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '24px', backgroundColor: '#94a3b8'}} />
+
+                                <div style={{display: 'flex', alignItems: 'start', gap: '24px'}}>
+                                    {node.children.map((child, index) => {
+                                        const isOnlyChild = node.children.length === 1;
+                                        const isFirstChild = index === 0;
+                                        const isLastChild = index === node.children.length - 1;
+
+                                        return (
+                                            <div key={child.id} style={{position: 'relative', paddingTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                                                {!isOnlyChild && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        top: '0',
+                                                        height: '1px',
+                                                        backgroundColor: '#94a3b8',
+                                                        left: isFirstChild ? '50%' : '0',
+                                                        right: isLastChild ? '50%' : '0'
+                                                    }} />
+                                                )}
+                                                <div style={{position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '40px', backgroundColor: '#94a3b8'}} />
+                                                <RenderNode node={child} />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const tree = buildTree(data.nodes);
+
+            if (!tree || tree.length === 0) {
+                return <p style={{textAlign: 'center', color: '#64748b'}}>フローチャートに表示するデータがありません。</p>;
+            }
+
+            return (
+                <div style={{padding: '32px', overflowX: 'auto', backgroundColor: '#f1f5f9', borderRadius: '8px'}}>
+                    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'start', gap: '32px', minWidth: 'max-content'}}>
+                        {tree.map(rootNode => (
+                            <RenderNode key={rootNode.id} node={rootNode} />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // 症例分析タブ
+        function CaseAnalysisTab({ patientData, updateCaseAnalysis, inheritToExercise, addFlowchartHypothesis, removeFlowchartHypothesis, updateFlowchartHypothesis, generateFlowchart, addTreatmentPlan, removeTreatmentPlan, updateTreatmentPlan, addTreatmentOption, removeTreatmentOption, updateTreatmentOption, inheritTreatmentToExercise, exportCaseAnalysisCSV, importCaseAnalysisCSV, exportFlowchartPNG }) {
+            const [showAchievement, setShowAchievement] = useState(true);
+            const triangleRef = useRef(null);
+
+            // CR達成率の計算
+            const calculateAchievementRate = () => {
+                const allQuestions = [
+                    patientData.caseAnalysis.cr1_q1,
+                    patientData.caseAnalysis.cr1_q2,
+                    patientData.caseAnalysis.cr1_q3,
+                    patientData.caseAnalysis.cr1_q4,
+                    patientData.caseAnalysis.cr2_q1,
+                    patientData.caseAnalysis.cr2_q2,
+                    patientData.caseAnalysis.cr2_q3,
+                    patientData.caseAnalysis.cr2_q4,
+                    patientData.caseAnalysis.cr3_q1,
+                    patientData.caseAnalysis.cr3_q2,
+                    patientData.caseAnalysis.cr3_q3,
+                    patientData.caseAnalysis.cr3_q4,
+                    patientData.caseAnalysis.cr3_q5,
+                    patientData.caseAnalysis.cr3_q6,
+                    patientData.caseAnalysis.cr3_q7
+                ];
+
+                const totalQuestions = allQuestions.length;
+                const yesCount = allQuestions.filter(q => q === 'yes').length;
+                const noCount = allQuestions.filter(q => q === 'no').length;
+                const unansweredCount = totalQuestions - yesCount - noCount;
+
+                const percentage = totalQuestions > 0 ? Math.round((yesCount / totalQuestions) * 100) : 0;
+
+                return { percentage, yesCount, noCount, unansweredCount, totalQuestions };
+            };
+
+            const achievement = calculateAchievementRate();
+            const getProgressBarClass = () => {
+                if (achievement.percentage >= 80) return 'progress-high';
+                if (achievement.percentage >= 50) return 'progress-medium';
+                return 'progress-low';
+            };
+
+            // スクロール監視
+            useEffect(() => {
+                const handleScroll = () => {
+                    if (triangleRef.current) {
+                        const rect = triangleRef.current.getBoundingClientRect();
+                        // 三角ロジックのセクションが画面上部に達したら非表示
+                        setShowAchievement(rect.top > 100);
+                    }
+                };
+
+                const contentArea = document.querySelector('.content');
+                if (contentArea) {
+                    contentArea.addEventListener('scroll', handleScroll);
+                    return () => contentArea.removeEventListener('scroll', handleScroll);
+                }
+            }, []);
+
+            return (
+                <>
+                    <div className="common-info-section">
+                        <h2 className="section-title">患者情報</h2>
+                        <p><strong>患者ID:</strong> {patientData.patientId || '（未入力）'}</p>
+                        <p><strong>患者名:</strong> {patientData.basicInfo.name || '（未入力）'} ({patientData.basicInfo.age}歳, {patientData.basicInfo.gender})</p>
+                        <p><strong>主訴:</strong> {patientData.basicInfo.chiefComplaint || '（未入力）'}</p>
+                    </div>
+
+                    {patientData.caseAnalysis.triangleData && (
+                        <div className="inherit-notice">
+                            ✓ 評価タブからデータを引き継ぎました
+                        </div>
+                    )}
+
+                    {showAchievement && (
+                        <div className="achievement-section">
+                            <div className="achievement-header">
+                                <div className="achievement-title">📊 臨床推論チェックリスト達成率</div>
+                                <div className="achievement-percentage">{achievement.percentage}%</div>
+                            </div>
+                            <div className="progress-bar-container">
+                                <div
+                                    className={`progress-bar-fill ${getProgressBarClass()}`}
+                                    style={{width: `${achievement.percentage}%`}}
+                                >
+                                    {achievement.percentage > 0 && `${achievement.percentage}%`}
+                                </div>
+                            </div>
+                            <div className="achievement-details">
+                                <div className="achievement-stat">
+                                    <span>✅ Yes:</span> <strong>{achievement.yesCount}</strong>
+                                </div>
+                                <div className="achievement-stat">
+                                    <span>❌ No:</span> <strong>{achievement.noCount}</strong>
+                                </div>
+                                <div className="achievement-stat">
+                                    <span>⚪ 未回答:</span> <strong>{achievement.unansweredCount}</strong>
+                                </div>
+                                <div className="achievement-stat">
+                                    <span>全質問数:</span> <strong>{achievement.totalQuestions}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="section">
+                        <h2 className="section-title">CR①：患者を理解できているか？</h2>
+                        <div className="cr-item">
+                            <label className="form-label">主訴を患者の言葉で理解しているか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q1" checked={patientData.caseAnalysis.cr1_q1 === 'yes'} onChange={() => updateCaseAnalysis('cr1_q1', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q1" checked={patientData.caseAnalysis.cr1_q1 === 'no'} onChange={() => updateCaseAnalysis('cr1_q1', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr1_q1 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q1_reason} onChange={(e) => updateCaseAnalysis('cr1_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">生活背景・目標を把握しているか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q2" checked={patientData.caseAnalysis.cr1_q2 === 'yes'} onChange={() => updateCaseAnalysis('cr1_q2', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q2" checked={patientData.caseAnalysis.cr1_q2 === 'no'} onChange={() => updateCaseAnalysis('cr1_q2', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr1_q2 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q2_reason} onChange={(e) => updateCaseAnalysis('cr1_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">患者の訴えの背景にある意味を読み取ったか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q3" checked={patientData.caseAnalysis.cr1_q3 === 'yes'} onChange={() => updateCaseAnalysis('cr1_q3', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q3" checked={patientData.caseAnalysis.cr1_q3 === 'no'} onChange={() => updateCaseAnalysis('cr1_q3', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr1_q3 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q3_reason} onChange={(e) => updateCaseAnalysis('cr1_q3_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">「何に困っているか」「何を求めているか」を理解したか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q4" checked={patientData.caseAnalysis.cr1_q4 === 'yes'} onChange={() => updateCaseAnalysis('cr1_q4', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr1_q4" checked={patientData.caseAnalysis.cr1_q4 === 'no'} onChange={() => updateCaseAnalysis('cr1_q4', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr1_q4 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q4_reason} onChange={(e) => updateCaseAnalysis('cr1_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">振り返り・改善点</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_reflection} onChange={(e) => updateCaseAnalysis('cr1_reflection', e.target.value)} placeholder="気づいた点や改善すべき点を記載" />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">CR②：協働できているか？</h2>
+                        <div className="cr-item">
+                            <label className="form-label">患者の意見・希望を聞いたか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q1" checked={patientData.caseAnalysis.cr2_q1 === 'yes'} onChange={() => updateCaseAnalysis('cr2_q1', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q1" checked={patientData.caseAnalysis.cr2_q1 === 'no'} onChange={() => updateCaseAnalysis('cr2_q1', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr2_q1 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q1_reason} onChange={(e) => updateCaseAnalysis('cr2_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">治療目標を患者と一緒に設定したか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q2" checked={patientData.caseAnalysis.cr2_q2 === 'yes'} onChange={() => updateCaseAnalysis('cr2_q2', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q2" checked={patientData.caseAnalysis.cr2_q2 === 'no'} onChange={() => updateCaseAnalysis('cr2_q2', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr2_q2 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q2_reason} onChange={(e) => updateCaseAnalysis('cr2_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">運動療法の選択肢を提示し患者が選べるようにしたか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q3" checked={patientData.caseAnalysis.cr2_q3 === 'yes'} onChange={() => updateCaseAnalysis('cr2_q3', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q3" checked={patientData.caseAnalysis.cr2_q3 === 'no'} onChange={() => updateCaseAnalysis('cr2_q3', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr2_q3 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q3_reason} onChange={(e) => updateCaseAnalysis('cr2_q3_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">ティーチバック法で理解度を確認したか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q4" checked={patientData.caseAnalysis.cr2_q4 === 'yes'} onChange={() => updateCaseAnalysis('cr2_q4', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr2_q4" checked={patientData.caseAnalysis.cr2_q4 === 'no'} onChange={() => updateCaseAnalysis('cr2_q4', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr2_q4 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q4_reason} onChange={(e) => updateCaseAnalysis('cr2_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">振り返り・改善点</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_reflection} onChange={(e) => updateCaseAnalysis('cr2_reflection', e.target.value)} placeholder="気づいた点や改善すべき点を記載" />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">CR③：思考プロセスが機能しているか？</h2>
+                        <div className="cr-item">
+                            <label className="form-label">評価結果から仮説を立てたか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q1" checked={patientData.caseAnalysis.cr3_q1 === 'yes'} onChange={() => updateCaseAnalysis('cr3_q1', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q1" checked={patientData.caseAnalysis.cr3_q1 === 'no'} onChange={() => updateCaseAnalysis('cr3_q1', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr3_q1 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q1_reason} onChange={(e) => updateCaseAnalysis('cr3_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">複数の仮説を立てたか？（1つに絞らなかったか？）</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q2" checked={patientData.caseAnalysis.cr3_q2 === 'yes'} onChange={() => updateCaseAnalysis('cr3_q2', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q2" checked={patientData.caseAnalysis.cr3_q2 === 'no'} onChange={() => updateCaseAnalysis('cr3_q2', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr3_q2 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q2_reason} onChange={(e) => updateCaseAnalysis('cr3_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">仮説を検証する追加評価を行ったか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q3" checked={patientData.caseAnalysis.cr3_q3 === 'yes'} onChange={() => updateCaseAnalysis('cr3_q3', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q3" checked={patientData.caseAnalysis.cr3_q3 === 'no'} onChange={() => updateCaseAnalysis('cr3_q3', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr3_q3 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q3_reason} onChange={(e) => updateCaseAnalysis('cr3_q3_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">仮説の優先順位をつけたか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q4" checked={patientData.caseAnalysis.cr3_q4 === 'yes'} onChange={() => updateCaseAnalysis('cr3_q4', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q4" checked={patientData.caseAnalysis.cr3_q4 === 'no'} onChange={() => updateCaseAnalysis('cr3_q4', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr3_q4 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q4_reason} onChange={(e) => updateCaseAnalysis('cr3_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">治療選択の根拠を説明できるか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q5" checked={patientData.caseAnalysis.cr3_q5 === 'yes'} onChange={() => updateCaseAnalysis('cr3_q5', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q5" checked={patientData.caseAnalysis.cr3_q5 === 'no'} onChange={() => updateCaseAnalysis('cr3_q5', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr3_q5 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q5_reason} onChange={(e) => updateCaseAnalysis('cr3_q5_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">効果判定を必ず行ったか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q6" checked={patientData.caseAnalysis.cr3_q6 === 'yes'} onChange={() => updateCaseAnalysis('cr3_q6', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q6" checked={patientData.caseAnalysis.cr3_q6 === 'no'} onChange={() => updateCaseAnalysis('cr3_q6', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr3_q6 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q6_reason} onChange={(e) => updateCaseAnalysis('cr3_q6_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="cr-item">
+                            <label className="form-label">効果が出ない時仮説を見直したか？</label>
+                            <div className="checkbox-group">
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q7" checked={patientData.caseAnalysis.cr3_q7 === 'yes'} onChange={() => updateCaseAnalysis('cr3_q7', 'yes')} /> Yes
+                                </label>
+                                <label className="checkbox-label">
+                                    <input type="radio" name="cr3_q7" checked={patientData.caseAnalysis.cr3_q7 === 'no'} onChange={() => updateCaseAnalysis('cr3_q7', 'no')} /> No
+                                </label>
+                            </div>
+                            {patientData.caseAnalysis.cr3_q7 === 'no' && (
+                                <div className="form-group" style={{marginTop: '10px'}}>
+                                    <label className="form-label">Noの理由</label>
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q7_reason} onChange={(e) => updateCaseAnalysis('cr3_q7_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">振り返り・改善点</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_reflection} onChange={(e) => updateCaseAnalysis('cr3_reflection', e.target.value)} placeholder="気づいた点や改善すべき点を記載" />
+                        </div>
+                    </div>
+
+                    <div className="section" ref={triangleRef}>
+                        <h2 className="section-title">三角ロジック</h2>
+                        <div className="form-group">
+                            <label className="form-label">データ（評価で得られた情報）</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.triangleData} onChange={(e) => updateCaseAnalysis('triangleData', e.target.value)} placeholder="ROM・筋力・動作分析等" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">根拠</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.triangleWarrant} onChange={(e) => updateCaseAnalysis('triangleWarrant', e.target.value)} placeholder="病態生理の理解・エビデンス・解剖運動学" />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">結論</label>
+                            <textarea className="form-textarea" value={patientData.caseAnalysis.triangleClaim} onChange={(e) => updateCaseAnalysis('triangleClaim', e.target.value)} placeholder="問題点の抽出・治療方針・介入の選択" />
+                        </div>
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">問題点フローチャート（AI生成）</h2>
+                        <p style={{marginBottom: '15px', color: '#64748b', fontSize: '14px'}}>
+                            仮説と所見の関連性を視覚化します。複数の仮説とそれぞれに関連する評価所見を入力してください。
+                        </p>
+
+                        <div style={{marginBottom: '20px'}}>
+                            {patientData.caseAnalysis.flowchartHypotheses.map((item, index) => (
+                                <div key={item.id} style={{
+                                    padding: '16px',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '8px',
+                                    backgroundColor: '#f8fafc',
+                                    marginBottom: '12px',
+                                    position: 'relative'
+                                }}>
+                                    {patientData.caseAnalysis.flowchartHypotheses.length > 1 && (
+                                        <button
+                                            onClick={() => removeFlowchartHypothesis(item.id)}
+                                            style={{
+                                                position: 'absolute',
+                                                top: '-8px',
+                                                right: '-8px',
+                                                background: 'white',
+                                                border: '2px solid #e2e8f0',
+                                                borderRadius: '50%',
+                                                width: '24px',
+                                                height: '24px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: '#94a3b8',
+                                                fontSize: '16px',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+
+                                    <div className="form-group" style={{marginBottom: '12px'}}>
+                                        <label className="form-label" style={{fontWeight: 'bold'}}>仮説 {index + 1}</label>
+                                        <input
+                                            type="text"
+                                            value={item.hypothesis}
+                                            onChange={(e) => updateFlowchartHypothesis(item.id, 'hypothesis', e.target.value)}
+                                            placeholder="例: 膝蓋大腿関節障害"
+                                            className="form-textarea"
+                                            style={{minHeight: 'auto', padding: '8px'}}
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{marginBottom: '0'}}>
+                                        <label className="form-label">関連する評価所見・事前情報</label>
+                                        <textarea
+                                            value={item.findings}
+                                            onChange={(e) => updateFlowchartHypothesis(item.id, 'findings', e.target.value)}
+                                            placeholder="この仮説を裏付ける情報を改行で区切って入力..."
+                                            className="form-textarea"
+                                            style={{minHeight: '100px'}}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="button-group" style={{marginBottom: '20px'}}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={addFlowchartHypothesis}
+                                style={{
+                                    background: '#e2e8f0',
+                                    color: '#475569',
+                                    border: '1px solid #cbd5e1'
+                                }}
+                            >
+                                + 仮説を追加
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={generateFlowchart}
+                                disabled={patientData.caseAnalysis.isGeneratingFlowchart}
+                                style={{
+                                    background: '#60a5fa',
+                                    opacity: patientData.caseAnalysis.isGeneratingFlowchart ? 0.6 : 1
+                                }}
+                            >
+                                {patientData.caseAnalysis.isGeneratingFlowchart ? '⏳ 生成中...' : '🪄 フローチャートを生成'}
+                            </button>
+                        </div>
+
+                        {patientData.caseAnalysis.flowchartError && (
+                            <div style={{
+                                background: '#fee2e2',
+                                border: '1px solid #fecaca',
+                                borderLeft: '4px solid #f87171',
+                                padding: '12px',
+                                borderRadius: '6px',
+                                marginBottom: '20px'
+                            }}>
+                                <p style={{fontWeight: 'bold', color: '#991b1b', marginBottom: '4px'}}>エラー</p>
+                                <p style={{color: '#7f1d1d'}}>{patientData.caseAnalysis.flowchartError}</p>
+                            </div>
+                        )}
+
+                        {patientData.caseAnalysis.isGeneratingFlowchart && (
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '40px',
+                                color: '#64748b'
+                            }}>
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    border: '4px solid #e2e8f0',
+                                    borderTop: '4px solid #60a5fa',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                                <p style={{marginTop: '12px'}}>仮説と所見を分析中...</p>
+                            </div>
+                        )}
+
+                        {!patientData.caseAnalysis.isGeneratingFlowchart && !patientData.caseAnalysis.flowchartError && patientData.caseAnalysis.flowchartData && (
+                            <div id="flowchart-container">
+                                <Flowchart data={patientData.caseAnalysis.flowchartData} />
+                            </div>
+                        )}
+
+                        {!patientData.caseAnalysis.isGeneratingFlowchart && !patientData.caseAnalysis.flowchartError && !patientData.caseAnalysis.flowchartData && (
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '40px',
+                                background: '#f8fafc',
+                                border: '2px dashed #cbd5e1',
+                                borderRadius: '8px',
+                                color: '#64748b',
+                                textAlign: 'center'
+                            }}>
+                                <p style={{fontWeight: '500'}}>生成されたフローチャートがここに表示されます。</p>
+                                <p style={{fontSize: '13px', marginTop: '4px', color: '#94a3b8'}}>
+                                    仮説と所見を入力し、「フローチャートを生成」をクリックして開始してください。
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="section">
+                        <h2 className="section-title">治療選択（問題点から治療を考える）</h2>
+                        <p style={{marginBottom: '15px', color: '#64748b', fontSize: '14px'}}>
+                            フローチャートで特定した問題点ごとに、治療目標と治療選択肢を整理します。
+                        </p>
+
+                        {patientData.caseAnalysis.treatmentPlans.length === 0 && (
+                            <div style={{
+                                padding: '20px',
+                                textAlign: 'center',
+                                background: '#f8fafc',
+                                border: '2px dashed #cbd5e1',
+                                borderRadius: '8px',
+                                marginBottom: '15px'
+                            }}>
+                                <p style={{color: '#64748b', marginBottom: '10px'}}>治療計画がまだ作成されていません</p>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={addTreatmentPlan}
+                                    style={{background: '#60a5fa'}}
+                                >
+                                    + 最初の治療計画を作成
+                                </button>
+                            </div>
+                        )}
+
+                        {patientData.caseAnalysis.treatmentPlans.map((plan, planIndex) => {
+                            // フローチャートから問題点（problem type）を抽出
+                            const problemNodes = patientData.caseAnalysis.flowchartData
+                                ? patientData.caseAnalysis.flowchartData.nodes.filter(n => n.type === 'problem')
+                                : [];
+
+                            return (
+                                <div key={plan.id} style={{
+                                    padding: '20px',
+                                    background: '#ffffff',
+                                    border: '2px solid #e2e8f0',
+                                    borderRadius: '12px',
+                                    marginBottom: '20px',
+                                    position: 'relative'
+                                }}>
+                                    <button
+                                        onClick={() => removeTreatmentPlan(plan.id)}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '-10px',
+                                            right: '-10px',
+                                            background: 'white',
+                                            border: '2px solid #f87171',
+                                            borderRadius: '50%',
+                                            width: '30px',
+                                            height: '30px',
+                                            cursor: 'pointer',
+                                            color: '#f87171',
+                                            fontSize: '18px',
+                                            fontWeight: 'bold',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+
+                                    <h3 style={{fontSize: '18px', fontWeight: 'bold', color: '#1e40af', marginBottom: '15px'}}>
+                                        治療計画 {planIndex + 1}
+                                    </h3>
+
+                                    <div className="form-group" style={{marginBottom: '15px'}}>
+                                        <label className="form-label" style={{fontWeight: 'bold'}}>対象とする問題点</label>
+                                        {problemNodes.length > 0 ? (
+                                            <select
+                                                value={plan.problemNode}
+                                                onChange={(e) => updateTreatmentPlan(plan.id, 'problemNode', e.target.value)}
+                                                className="form-textarea"
+                                                style={{minHeight: 'auto', padding: '8px', cursor: 'pointer'}}
+                                            >
+                                                <option value="">-- 問題点を選択 --</option>
+                                                {problemNodes.map(node => (
+                                                    <option key={node.id} value={node.label}>{node.label}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                value={plan.problemNode}
+                                                onChange={(e) => updateTreatmentPlan(plan.id, 'problemNode', e.target.value)}
+                                                placeholder="問題点を入力（フローチャートを生成すると選択できます）"
+                                                className="form-textarea"
+                                                style={{minHeight: 'auto', padding: '8px'}}
+                                            />
+                                        )}
+                                        <div className="help-text">フローチャートで特定した問題点から選択、または直接入力</div>
+                                    </div>
+
+                                    <div className="form-group" style={{marginBottom: '20px'}}>
+                                        <label className="form-label" style={{fontWeight: 'bold'}}>治療目標</label>
+                                        <textarea
+                                            value={plan.treatmentGoal}
+                                            onChange={(e) => updateTreatmentPlan(plan.id, 'treatmentGoal', e.target.value)}
+                                            placeholder="この問題点に対する具体的な治療目標を記載&#10;例：膝関節屈曲ROM 120度まで改善、疼痛NRS 3以下"
+                                            className="form-textarea"
+                                            style={{minHeight: '80px'}}
+                                        />
+                                    </div>
+
+                                    <div style={{
+                                        padding: '15px',
+                                        background: '#f8fafc',
+                                        borderRadius: '8px',
+                                        marginBottom: '10px'
+                                    }}>
+                                        <h4 style={{fontSize: '16px', fontWeight: 'bold', color: '#475569', marginBottom: '12px'}}>
+                                            治療選択肢
+                                        </h4>
+
+                                        {plan.options.map((option, optIndex) => (
+                                            <div key={option.id} style={{
+                                                padding: '12px',
+                                                background: 'white',
+                                                border: '1px solid #cbd5e1',
+                                                borderRadius: '6px',
+                                                marginBottom: '10px',
+                                                position: 'relative'
+                                            }}>
+                                                {plan.options.length > 1 && (
+                                                    <button
+                                                        onClick={() => removeTreatmentOption(plan.id, option.id)}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: '-6px',
+                                                            right: '-6px',
+                                                            background: 'white',
+                                                            border: '1px solid #cbd5e1',
+                                                            borderRadius: '50%',
+                                                            width: '20px',
+                                                            height: '20px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '12px',
+                                                            color: '#94a3b8'
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
+
+                                                <div style={{display: 'flex', gap: '10px', marginBottom: '8px'}}>
+                                                    <div style={{flex: '2'}}>
+                                                        <label className="form-label" style={{fontSize: '13px'}}>治療選択肢 {optIndex + 1}</label>
+                                                        <input
+                                                            type="text"
+                                                            value={option.name}
+                                                            onChange={(e) => updateTreatmentOption(plan.id, option.id, 'name', e.target.value)}
+                                                            placeholder="例：内側広筋選択的トレーニング"
+                                                            className="form-textarea"
+                                                            style={{minHeight: 'auto', padding: '6px', fontSize: '14px'}}
+                                                        />
+                                                    </div>
+                                                    <div style={{flex: '1'}}>
+                                                        <label className="form-label" style={{fontSize: '13px'}}>優先順位</label>
+                                                        <select
+                                                            value={option.priority}
+                                                            onChange={(e) => updateTreatmentOption(plan.id, option.id, 'priority', e.target.value)}
+                                                            className="form-textarea"
+                                                            style={{minHeight: 'auto', padding: '6px', fontSize: '14px', cursor: 'pointer'}}
+                                                        >
+                                                            <option value="">--</option>
+                                                            <option value="高">高</option>
+                                                            <option value="中">中</option>
+                                                            <option value="低">低</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="form-label" style={{fontSize: '13px'}}>選択理由・根拠</label>
+                                                    <textarea
+                                                        value={option.rationale}
+                                                        onChange={(e) => updateTreatmentOption(plan.id, option.id, 'rationale', e.target.value)}
+                                                        placeholder="なぜこの治療を選択したのか、エビデンスや病態生理に基づく理由を記載"
+                                                        className="form-textarea"
+                                                        style={{minHeight: '60px', fontSize: '14px'}}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() => addTreatmentOption(plan.id)}
+                                            style={{
+                                                width: '100%',
+                                                marginTop: '8px',
+                                                background: '#e2e8f0',
+                                                color: '#475569',
+                                                border: '1px solid #cbd5e1',
+                                                fontSize: '14px'
+                                            }}
+                                        >
+                                            + 治療選択肢を追加
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {patientData.caseAnalysis.treatmentPlans.length > 0 && (
+                            <>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={addTreatmentPlan}
+                                    style={{
+                                        width: '100%',
+                                        background: '#60a5fa',
+                                        marginBottom: '10px'
+                                    }}
+                                >
+                                    + 別の問題点に対する治療計画を追加
+                                </button>
+                                <button
+                                    className="btn btn-success"
+                                    onClick={inheritTreatmentToExercise}
+                                    style={{
+                                        width: '100%',
+                                        background: '#10b981',
+                                        color: 'white',
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    ➡️ 治療介入タブに引き継ぐ
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="button-group">
+                        <button className="btn btn-info" onClick={exportCaseAnalysisCSV} style={{background: '#3b82f6'}}>
+                            📥 症例分析をCSV出力
+                        </button>
+                        <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer'}}>
+                            📂 症例分析をCSV読み込み
+                            <input type="file" accept=".csv" onChange={importCaseAnalysisCSV} style={{display: 'none'}} />
+                        </label>
+                        <button className="btn btn-info" onClick={exportFlowchartPNG} style={{background: '#06b6d4'}}>
+                            🖼️ フローチャートを画像出力
+                        </button>
+                        <button className="btn btn-warning" onClick={inheritToExercise}>
+                            ➡️ 手動で治療介入タブに引き継ぐ
+                        </button>
+                    </div>
+                </>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
