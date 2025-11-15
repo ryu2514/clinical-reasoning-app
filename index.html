@@ -730,6 +730,8 @@
             const [showInheritModal, setShowInheritModal] = useState(false);
             const [inheritAction, setInheritAction] = useState(null);
             const previousTabRef = useRef('basic');
+            const [autoSaveStatus, setAutoSaveStatus] = useState('');
+            const autoSaveTimerRef = useRef(null);
 
             // 統合患者データ（セッション対応）
             const [patientData, setPatientData] = useState({
@@ -786,13 +788,26 @@
                     setSavedPatients(JSON.parse(saved));
                 }
 
-                const today = new Date().toISOString().split('T')[0];
-                setPatientData(prev => ({
-                    ...prev,
-                    createdDate: today,
-                    currentEvaluation: { ...prev.currentEvaluation, sessionDate: today },
-                    currentExercise: { ...prev.currentExercise, sessionDate: today }
-                }));
+                // 一時保存データの復元
+                const tempData = localStorage.getItem('tempPatientData');
+                if (tempData) {
+                    try {
+                        const parsedData = JSON.parse(tempData);
+                        setPatientData(parsedData);
+                        setAutoSaveStatus('前回の入力を復元しました');
+                        setTimeout(() => setAutoSaveStatus(''), 3000);
+                    } catch (error) {
+                        console.error('一時保存データの復元に失敗:', error);
+                    }
+                } else {
+                    const today = new Date().toISOString().split('T')[0];
+                    setPatientData(prev => ({
+                        ...prev,
+                        createdDate: today,
+                        currentEvaluation: { ...prev.currentEvaluation, sessionDate: today },
+                        currentExercise: { ...prev.currentExercise, sessionDate: today }
+                    }));
+                }
             }, []);
 
             // タブ切り替え時の自動引き継ぎ確認
@@ -825,6 +840,38 @@
 
                 previousTabRef.current = currentTab;
             }, [activeTab]);
+
+            // 自動保存（入力停止3秒後）
+            useEffect(() => {
+                // タイマーをクリア
+                if (autoSaveTimerRef.current) {
+                    clearTimeout(autoSaveTimerRef.current);
+                }
+
+                // 患者IDが空の場合は自動保存しない
+                if (!patientData.patientId) {
+                    return;
+                }
+
+                // 3秒後に自動保存
+                autoSaveTimerRef.current = setTimeout(() => {
+                    try {
+                        localStorage.setItem('tempPatientData', JSON.stringify(patientData));
+                        const now = new Date();
+                        const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+                        setAutoSaveStatus(`${timeStr} 自動保存済み`);
+                    } catch (error) {
+                        console.error('自動保存エラー:', error);
+                    }
+                }, 3000);
+
+                // クリーンアップ
+                return () => {
+                    if (autoSaveTimerRef.current) {
+                        clearTimeout(autoSaveTimerRef.current);
+                    }
+                };
+            }, [patientData]);
 
             const showMessage = (message) => {
                 setToastMessage(message);
@@ -1707,6 +1754,11 @@ ${h.findings}
                 <div className="container">
                     <div className="header">
                         <h1>臨床推論統合アプリ</h1>
+                        {autoSaveStatus && (
+                            <p style={{fontSize: '14px', color: '#10b981', marginTop: '5px'}}>
+                                ✓ {autoSaveStatus}
+                            </p>
+                        )}
                     </div>
 
                     <div className="tabs">
