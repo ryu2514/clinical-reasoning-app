@@ -588,24 +588,89 @@
 
         @media (max-width: 768px) {
             body {
-                padding: 10px;
+                padding: 8px;
+            }
+
+            .container {
+                border-radius: 12px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 20px;
             }
 
             .content {
-                padding: 20px;
+                padding: 15px;
+                max-height: none;
             }
 
             .section {
-                padding: 20px;
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .section-title {
+                font-size: 16px;
+            }
+
+            .section-title::before {
+                font-size: 18px;
+                margin-right: 8px;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .form-label {
+                font-size: 15px;
+                margin-bottom: 10px;
+            }
+
+            .form-input, .form-textarea, .form-select {
+                padding: 14px 12px;
+                font-size: 16px;
+                border-radius: 10px;
+            }
+
+            .form-textarea {
+                min-height: 120px;
+            }
+
+            .checkbox-group {
+                gap: 24px;
+            }
+
+            .checkbox-label {
+                font-size: 16px;
+                gap: 10px;
+            }
+
+            .checkbox-label input[type="checkbox"],
+            .checkbox-label input[type="radio"] {
+                width: 24px;
+                height: 24px;
+            }
+
+            .cr-item {
+                padding: 16px;
+                margin-bottom: 16px;
             }
 
             .button-group {
                 flex-direction: column;
+                gap: 10px;
             }
 
             .btn {
                 width: 100%;
                 justify-content: center;
+                padding: 16px 20px;
+                font-size: 15px;
             }
 
             .id-row {
@@ -618,13 +683,12 @@
 
             .tab {
                 font-size: 13px;
-                padding: 12px 16px;
+                padding: 14px 12px;
             }
 
             .achievement-section {
-                top: 5px;
-                padding: 10px;
-                margin-bottom: 15px;
+                padding: 15px;
+                margin-bottom: 20px;
             }
 
             .achievement-header {
@@ -676,11 +740,7 @@
             border-radius: 12px;
             margin-bottom: 25px;
             border-left: 4px solid #64b5f6;
-            position: sticky;
-            top: 10px;
-            z-index: 50;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: opacity 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .achievement-header {
@@ -2657,37 +2717,6 @@
                         </div>
                     )}
 
-                    {showAchievement && (
-                        <div className="achievement-section">
-                            <div className="achievement-header">
-                                <div className="achievement-title">📊 臨床推論チェックリスト達成率</div>
-                                <div className="achievement-percentage">{achievement.percentage}%</div>
-                            </div>
-                            <div className="progress-bar-container">
-                                <div
-                                    className={`progress-bar-fill ${getProgressBarClass()}`}
-                                    style={{width: `${achievement.percentage}%`}}
-                                >
-                                    {achievement.percentage > 0 && `${achievement.percentage}%`}
-                                </div>
-                            </div>
-                            <div className="achievement-details">
-                                <div className="achievement-stat">
-                                    <span>✅ Yes:</span> <strong>{achievement.yesCount}</strong>
-                                </div>
-                                <div className="achievement-stat">
-                                    <span>❌ No:</span> <strong>{achievement.noCount}</strong>
-                                </div>
-                                <div className="achievement-stat">
-                                    <span>⚪ 未回答:</span> <strong>{achievement.unansweredCount}</strong>
-                                </div>
-                                <div className="achievement-stat">
-                                    <span>全質問数:</span> <strong>{achievement.totalQuestions}</strong>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     <div className="section">
                         <h2 className="section-title">CR①：患者を理解できているか？</h2>
                         <div className="cr-item">
@@ -3319,6 +3348,35 @@
                                 </button>
                             </>
                         )}
+                    </div>
+
+                    <div className="achievement-section">
+                        <div className="achievement-header">
+                            <div className="achievement-title">📊 臨床推論チェックリスト達成率</div>
+                            <div className="achievement-percentage">{achievement.percentage}%</div>
+                        </div>
+                        <div className="progress-bar-container">
+                            <div
+                                className={`progress-bar-fill ${getProgressBarClass()}`}
+                                style={{width: `${achievement.percentage}%`}}
+                            >
+                                {achievement.percentage > 0 && `${achievement.percentage}%`}
+                            </div>
+                        </div>
+                        <div className="achievement-details">
+                            <div className="achievement-stat">
+                                <span>✅ Yes:</span> <strong>{achievement.yesCount}</strong>
+                            </div>
+                            <div className="achievement-stat">
+                                <span>❌ No:</span> <strong>{achievement.noCount}</strong>
+                            </div>
+                            <div className="achievement-stat">
+                                <span>⚪ 未回答:</span> <strong>{achievement.unansweredCount}</strong>
+                            </div>
+                            <div className="achievement-stat">
+                                <span>全質問数:</span> <strong>{achievement.totalQuestions}</strong>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="button-group">
