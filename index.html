@@ -2725,23 +2725,6 @@
                             )}
                         </div>
                         <div className="cr-item">
-                            <label className="form-label">患者の訴えの背景にある意味を読み取ったか？</label>
-                            <div className="checkbox-group">
-                                <label className="checkbox-label">
-                                    <input type="radio" name="cr1_q3" checked={patientData.caseAnalysis.cr1_q3 === 'yes'} onChange={() => updateCaseAnalysis('cr1_q3', 'yes')} /> Yes
-                                </label>
-                                <label className="checkbox-label">
-                                    <input type="radio" name="cr1_q3" checked={patientData.caseAnalysis.cr1_q3 === 'no'} onChange={() => updateCaseAnalysis('cr1_q3', 'no')} /> No
-                                </label>
-                            </div>
-                            {patientData.caseAnalysis.cr1_q3 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
-                                    <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q3_reason} onChange={(e) => updateCaseAnalysis('cr1_q3_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
-                                </div>
-                            )}
-                        </div>
-                        <div className="cr-item">
                             <label className="form-label">「何に困っているか」「何を求めているか」を理解したか？</label>
                             <div className="checkbox-group">
                                 <label className="checkbox-label">
@@ -2797,40 +2780,6 @@
                                 <div className="form-group" style={{marginTop: '10px'}}>
                                     <label className="form-label">Noの理由</label>
                                     <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q2_reason} onChange={(e) => updateCaseAnalysis('cr2_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
-                                </div>
-                            )}
-                        </div>
-                        <div className="cr-item">
-                            <label className="form-label">運動療法の選択肢を提示し患者が選べるようにしたか？</label>
-                            <div className="checkbox-group">
-                                <label className="checkbox-label">
-                                    <input type="radio" name="cr2_q3" checked={patientData.caseAnalysis.cr2_q3 === 'yes'} onChange={() => updateCaseAnalysis('cr2_q3', 'yes')} /> Yes
-                                </label>
-                                <label className="checkbox-label">
-                                    <input type="radio" name="cr2_q3" checked={patientData.caseAnalysis.cr2_q3 === 'no'} onChange={() => updateCaseAnalysis('cr2_q3', 'no')} /> No
-                                </label>
-                            </div>
-                            {patientData.caseAnalysis.cr2_q3 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
-                                    <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q3_reason} onChange={(e) => updateCaseAnalysis('cr2_q3_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
-                                </div>
-                            )}
-                        </div>
-                        <div className="cr-item">
-                            <label className="form-label">ティーチバック法で理解度を確認したか？</label>
-                            <div className="checkbox-group">
-                                <label className="checkbox-label">
-                                    <input type="radio" name="cr2_q4" checked={patientData.caseAnalysis.cr2_q4 === 'yes'} onChange={() => updateCaseAnalysis('cr2_q4', 'yes')} /> Yes
-                                </label>
-                                <label className="checkbox-label">
-                                    <input type="radio" name="cr2_q4" checked={patientData.caseAnalysis.cr2_q4 === 'no'} onChange={() => updateCaseAnalysis('cr2_q4', 'no')} /> No
-                                </label>
-                            </div>
-                            {patientData.caseAnalysis.cr2_q4 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
-                                    <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q4_reason} onChange={(e) => updateCaseAnalysis('cr2_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
                                 </div>
                             )}
                         </div>
