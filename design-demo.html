@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>デザインパターン比較デモ</title>
+    <title>クリーン・ミニマル バリエーション</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #f0f0f0;
             padding: 20px;
         }
         .demo-grid {
@@ -20,45 +20,54 @@
         }
         .demo-label {
             text-align: center;
-            padding: 10px;
+            padding: 12px 16px;
             font-weight: 600;
-            font-size: 14px;
-            background: #333;
+            font-size: 13px;
+            background: #1a1a1a;
             color: white;
             border-radius: 8px 8px 0 0;
         }
-        @media (max-width: 900px) {
+        .demo-label span {
+            display: block;
+            font-weight: 400;
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+        @media (max-width: 1000px) {
             .demo-grid { grid-template-columns: 1fr; }
         }
 
-        /* ===== 1. クリーン・ミニマル (Notion/Linear風) ===== */
-        .minimal .container {
+        /* ===== A. ピュア・ミニマル（モノトーン） ===== */
+        .pattern-a .container {
             background: #fff;
             border-radius: 8px;
             border: 1px solid #e5e5e5;
             overflow: hidden;
         }
-        .minimal .header {
-            padding: 24px 28px;
+        .pattern-a .header {
+            padding: 20px 24px;
             border-bottom: 1px solid #eee;
         }
-        .minimal .header h1 {
-            font-size: 18px;
+        .pattern-a .header h1 {
+            font-size: 17px;
             font-weight: 600;
             color: #1a1a1a;
+            letter-spacing: -0.3px;
         }
-        .minimal .header p {
-            font-size: 13px;
-            color: #666;
+        .pattern-a .header p {
+            font-size: 12px;
+            color: #888;
             margin-top: 4px;
         }
-        .minimal .tabs {
+        .pattern-a .tabs {
             display: flex;
             border-bottom: 1px solid #eee;
-            padding: 0 20px;
+            padding: 0 16px;
+            gap: 4px;
         }
-        .minimal .tab {
-            padding: 12px 16px;
+        .pattern-a .tab {
+            padding: 12px 14px;
             font-size: 13px;
             color: #666;
             border: none;
@@ -66,46 +75,48 @@
             cursor: pointer;
             border-bottom: 2px solid transparent;
             margin-bottom: -1px;
+            transition: color 0.2s;
         }
-        .minimal .tab.active {
+        .pattern-a .tab:hover { color: #1a1a1a; }
+        .pattern-a .tab.active {
             color: #1a1a1a;
+            font-weight: 500;
             border-bottom-color: #1a1a1a;
         }
-        .minimal .content {
-            padding: 24px 28px;
+        .pattern-a .content { padding: 24px; }
+        .pattern-a .section {
+            margin-bottom: 20px;
         }
-        .minimal .section {
-            margin-bottom: 24px;
-        }
-        .minimal .section-title {
-            font-size: 14px;
+        .pattern-a .section-title {
+            font-size: 13px;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #f0f0f0;
         }
-        .minimal .form-label {
-            font-size: 13px;
-            color: #444;
+        .pattern-a .form-label {
+            font-size: 12px;
+            color: #555;
             margin-bottom: 6px;
             display: block;
+            font-weight: 500;
         }
-        .minimal .form-input, .minimal .form-textarea {
+        .pattern-a .form-input, .pattern-a .form-textarea {
             width: 100%;
             padding: 10px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #e0e0e0;
             border-radius: 6px;
             font-size: 14px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             transition: border-color 0.2s;
         }
-        .minimal .form-input:focus, .minimal .form-textarea:focus {
+        .pattern-a .form-input:focus, .pattern-a .form-textarea:focus {
             outline: none;
             border-color: #1a1a1a;
         }
-        .minimal .form-textarea { min-height: 80px; resize: vertical; }
-        .minimal .btn {
+        .pattern-a .form-textarea { min-height: 80px; resize: vertical; }
+        .pattern-a .btn {
             padding: 10px 20px;
             font-size: 13px;
             font-weight: 500;
@@ -114,314 +125,543 @@
             cursor: pointer;
             background: #1a1a1a;
             color: white;
+            transition: background 0.2s;
         }
-        .minimal .btn-secondary {
+        .pattern-a .btn:hover { background: #333; }
+        .pattern-a .btn-secondary {
             background: #f5f5f5;
             color: #1a1a1a;
             border: 1px solid #ddd;
         }
-        .minimal .button-group {
+        .pattern-a .btn-secondary:hover { background: #eee; }
+        .pattern-a .button-group {
             display: flex;
             gap: 10px;
             margin-top: 20px;
         }
 
-        /* ===== 2. メディカル・プロ (電子カルテ風) ===== */
-        .medical .container {
+        /* ===== B. ソフト・アクセント（淡いブルー） ===== */
+        .pattern-b .container {
             background: #fff;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: 1px solid #e8ecf0;
             overflow: hidden;
         }
-        .medical .header {
-            background: #1e40af;
-            padding: 16px 24px;
+        .pattern-b .header {
+            padding: 20px 24px;
+            background: linear-gradient(to right, #f8fafc, #fff);
+            border-bottom: 1px solid #e8ecf0;
         }
-        .medical .header h1 {
-            font-size: 16px;
+        .pattern-b .header h1 {
+            font-size: 17px;
             font-weight: 600;
-            color: white;
+            color: #1e293b;
         }
-        .medical .header p {
+        .pattern-b .header p {
             font-size: 12px;
-            color: rgba(255,255,255,0.8);
-            margin-top: 2px;
+            color: #64748b;
+            margin-top: 4px;
         }
-        .medical .tabs {
+        .pattern-b .tabs {
             display: flex;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e8ecf0;
+            padding: 0 16px;
+            background: #fafbfc;
         }
-        .medical .tab {
-            padding: 12px 20px;
+        .pattern-b .tab {
+            padding: 12px 14px;
             font-size: 13px;
             color: #64748b;
             border: none;
             background: none;
             cursor: pointer;
             border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
         }
-        .medical .tab.active {
-            color: #1e40af;
-            border-bottom-color: #1e40af;
-            background: white;
+        .pattern-b .tab.active {
+            color: #3b82f6;
+            font-weight: 500;
+            border-bottom-color: #3b82f6;
+            background: #fff;
         }
-        .medical .content {
-            padding: 20px 24px;
-        }
-        .medical .section {
+        .pattern-b .content { padding: 24px; }
+        .pattern-b .section {
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            padding: 16px;
+            border: 1px solid #e8ecf0;
+            border-radius: 8px;
+            padding: 18px;
             margin-bottom: 16px;
         }
-        .medical .section-title {
+        .pattern-b .section-title {
             font-size: 13px;
             font-weight: 600;
-            color: #1e40af;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #1e293b;
+            margin-bottom: 14px;
         }
-        .medical .form-label {
+        .pattern-b .form-label {
             font-size: 12px;
             color: #475569;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             display: block;
             font-weight: 500;
         }
-        .medical .form-input, .medical .form-textarea {
+        .pattern-b .form-input, .pattern-b .form-textarea {
             width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-size: 13px;
-            margin-bottom: 12px;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 14px;
+            background: #fff;
         }
-        .medical .form-input:focus, .medical .form-textarea:focus {
+        .pattern-b .form-input:focus, .pattern-b .form-textarea:focus {
             outline: none;
-            border-color: #1e40af;
-            box-shadow: 0 0 0 2px rgba(30,64,175,0.1);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
         }
-        .medical .form-textarea { min-height: 70px; resize: vertical; }
-        .medical .btn {
-            padding: 8px 16px;
+        .pattern-b .form-textarea { min-height: 80px; resize: vertical; }
+        .pattern-b .btn {
+            padding: 10px 20px;
             font-size: 13px;
             font-weight: 500;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            background: #1e40af;
+            background: #3b82f6;
             color: white;
         }
-        .medical .btn-secondary {
-            background: white;
-            color: #1e40af;
-            border: 1px solid #1e40af;
+        .pattern-b .btn:hover { background: #2563eb; }
+        .pattern-b .btn-secondary {
+            background: #fff;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
         }
-        .medical .button-group {
+        .pattern-b .button-group {
             display: flex;
-            gap: 8px;
-            margin-top: 16px;
+            gap: 10px;
+            margin-top: 20px;
         }
 
-        /* ===== 3. ダークモード ===== */
-        .dark .container {
-            background: #1e1e1e;
+        /* ===== C. カード・シャドウ（立体感） ===== */
+        .pattern-c .container {
+            background: #fff;
             border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
         }
-        .dark .header {
-            background: #2d2d2d;
-            padding: 20px 24px;
-            border-bottom: 1px solid #3d3d3d;
+        .pattern-c .header {
+            padding: 22px 26px;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .dark .header h1 {
-            font-size: 17px;
+        .pattern-c .header h1 {
+            font-size: 18px;
             font-weight: 600;
-            color: #fff;
+            color: #111;
         }
-        .dark .header p {
+        .pattern-c .header p {
             font-size: 13px;
-            color: #888;
+            color: #777;
             margin-top: 4px;
         }
-        .dark .tabs {
+        .pattern-c .tabs {
             display: flex;
-            background: #252525;
-            border-bottom: 1px solid #3d3d3d;
+            padding: 8px 16px 0;
+            gap: 6px;
+        }
+        .pattern-c .tab {
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #666;
+            border: none;
+            background: #f5f5f5;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+        }
+        .pattern-c .tab.active {
+            color: #111;
+            font-weight: 500;
+            background: #fff;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+        }
+        .pattern-c .content {
+            padding: 24px;
+            background: #fff;
+        }
+        .pattern-c .section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #f0f0f0;
+        }
+        .pattern-c .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 16px;
+        }
+        .pattern-c .form-label {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 500;
+        }
+        .pattern-c .form-input, .pattern-c .form-textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 14px;
+            transition: all 0.2s;
+        }
+        .pattern-c .form-input:focus, .pattern-c .form-textarea:focus {
+            outline: none;
+            border-color: #111;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .pattern-c .form-textarea { min-height: 80px; resize: vertical; }
+        .pattern-c .btn {
+            padding: 11px 22px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #111;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .pattern-c .btn:hover { background: #333; }
+        .pattern-c .btn-secondary {
+            background: #fff;
+            color: #111;
+            border: 1px solid #ddd;
+            box-shadow: none;
+        }
+        .pattern-c .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* ===== D. ボーダー・アクセント（左線＋淡い緑） ===== */
+        .pattern-d .container {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e5e7e6;
+            overflow: hidden;
+        }
+        .pattern-d .header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7e6;
+            border-left: 3px solid #10b981;
+        }
+        .pattern-d .header h1 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        .pattern-d .header p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .pattern-d .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7e6;
             padding: 0 16px;
         }
-        .dark .tab {
-            padding: 12px 16px;
+        .pattern-d .tab {
+            padding: 12px 14px;
             font-size: 13px;
-            color: #888;
+            color: #6b7280;
             border: none;
             background: none;
             cursor: pointer;
             border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
         }
-        .dark .tab.active {
-            color: #60a5fa;
-            border-bottom-color: #60a5fa;
-        }
-        .dark .content {
-            padding: 20px 24px;
-        }
-        .dark .section {
-            background: #252525;
-            border: 1px solid #3d3d3d;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .dark .section-title {
-            font-size: 14px;
+        .pattern-d .tab.active {
+            color: #10b981;
             font-weight: 500;
-            color: #60a5fa;
+            border-bottom-color: #10b981;
+        }
+        .pattern-d .content { padding: 24px; }
+        .pattern-d .section {
+            border-left: 3px solid #e5e7e6;
+            padding: 16px 18px;
+            margin-bottom: 16px;
+            background: #fafbfa;
+            border-radius: 0 6px 6px 0;
+            transition: border-color 0.2s;
+        }
+        .pattern-d .section:hover {
+            border-left-color: #10b981;
+        }
+        .pattern-d .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
             margin-bottom: 14px;
         }
-        .dark .form-label {
+        .pattern-d .form-label {
             font-size: 12px;
-            color: #aaa;
+            color: #4b5563;
             margin-bottom: 6px;
             display: block;
+            font-weight: 500;
         }
-        .dark .form-input, .dark .form-textarea {
+        .pattern-d .form-input, .pattern-d .form-textarea {
             width: 100%;
             padding: 10px 12px;
-            border: 1px solid #3d3d3d;
+            border: 1px solid #e5e7e6;
             border-radius: 6px;
             font-size: 14px;
             margin-bottom: 14px;
-            background: #1e1e1e;
-            color: #eee;
+            background: #fff;
         }
-        .dark .form-input:focus, .dark .form-textarea:focus {
+        .pattern-d .form-input:focus, .pattern-d .form-textarea:focus {
             outline: none;
-            border-color: #60a5fa;
+            border-color: #10b981;
         }
-        .dark .form-textarea { min-height: 70px; resize: vertical; }
-        .dark .btn {
+        .pattern-d .form-textarea { min-height: 80px; resize: vertical; }
+        .pattern-d .btn {
             padding: 10px 20px;
             font-size: 13px;
             font-weight: 500;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            background: #60a5fa;
-            color: #1e1e1e;
+            background: #10b981;
+            color: white;
         }
-        .dark .btn-secondary {
-            background: #3d3d3d;
-            color: #eee;
+        .pattern-d .btn:hover { background: #059669; }
+        .pattern-d .btn-secondary {
+            background: #fff;
+            color: #10b981;
+            border: 1px solid #10b981;
         }
-        .dark .button-group {
+        .pattern-d .button-group {
             display: flex;
             gap: 10px;
-            margin-top: 16px;
+            margin-top: 20px;
         }
 
-        /* ===== 4. シンプル・ホワイト ===== */
-        .simple .container {
-            background: #fff;
-            border: 1px solid #e0e0e0;
+        /* ===== E. ウォーム・ニュートラル（温かみ） ===== */
+        .pattern-e .container {
+            background: #fffcf9;
+            border-radius: 10px;
+            border: 1px solid #e8e4df;
             overflow: hidden;
         }
-        .simple .header {
+        .pattern-e .header {
             padding: 20px 24px;
-            border-bottom: 1px solid #e0e0e0;
+            background: #faf8f5;
+            border-bottom: 1px solid #e8e4df;
         }
-        .simple .header h1 {
-            font-size: 18px;
-            font-weight: 500;
-            color: #222;
+        .pattern-e .header h1 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #2d2a26;
         }
-        .simple .header p {
-            font-size: 13px;
-            color: #666;
+        .pattern-e .header p {
+            font-size: 12px;
+            color: #7c756c;
             margin-top: 4px;
         }
-        .simple .tabs {
+        .pattern-e .tabs {
             display: flex;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e8e4df;
+            padding: 0 16px;
+            background: #fdfbf8;
         }
-        .simple .tab {
-            padding: 14px 20px;
-            font-size: 14px;
-            color: #666;
+        .pattern-e .tab {
+            padding: 12px 14px;
+            font-size: 13px;
+            color: #7c756c;
             border: none;
             background: none;
             cursor: pointer;
-        }
-        .simple .tab.active {
-            color: #222;
-            background: #f9f9f9;
-            border-bottom: 2px solid #222;
+            border-bottom: 2px solid transparent;
             margin-bottom: -1px;
         }
-        .simple .content {
-            padding: 24px;
-            background: #f9f9f9;
-        }
-        .simple .section {
-            background: white;
-            border: 1px solid #e0e0e0;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .simple .section-title {
-            font-size: 15px;
+        .pattern-e .tab.active {
+            color: #c47d2f;
             font-weight: 500;
-            color: #222;
+            border-bottom-color: #c47d2f;
+        }
+        .pattern-e .content { padding: 24px; }
+        .pattern-e .section {
+            background: #fff;
+            border: 1px solid #e8e4df;
+            border-radius: 8px;
+            padding: 18px;
             margin-bottom: 16px;
         }
-        .simple .form-label {
+        .pattern-e .section-title {
             font-size: 13px;
-            color: #444;
+            font-weight: 600;
+            color: #2d2a26;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0ebe5;
+        }
+        .pattern-e .form-label {
+            font-size: 12px;
+            color: #5c5650;
             margin-bottom: 6px;
             display: block;
+            font-weight: 500;
         }
-        .simple .form-input, .simple .form-textarea {
+        .pattern-e .form-input, .pattern-e .form-textarea {
             width: 100%;
             padding: 10px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #e0dbd4;
+            border-radius: 6px;
             font-size: 14px;
             margin-bottom: 14px;
+            background: #fffcf9;
         }
-        .simple .form-input:focus, .simple .form-textarea:focus {
+        .pattern-e .form-input:focus, .pattern-e .form-textarea:focus {
             outline: none;
-            border-color: #222;
+            border-color: #c47d2f;
         }
-        .simple .form-textarea { min-height: 70px; resize: vertical; }
-        .simple .btn {
+        .pattern-e .form-textarea { min-height: 80px; resize: vertical; }
+        .pattern-e .btn {
             padding: 10px 20px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            border: 1px solid #222;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
-            background: #222;
+            background: #c47d2f;
             color: white;
         }
-        .simple .btn-secondary {
-            background: white;
-            color: #222;
+        .pattern-e .btn:hover { background: #a86a28; }
+        .pattern-e .btn-secondary {
+            background: #fff;
+            color: #c47d2f;
+            border: 1px solid #c47d2f;
         }
-        .simple .button-group {
+        .pattern-e .button-group {
             display: flex;
             gap: 10px;
-            margin-top: 16px;
+            margin-top: 20px;
+        }
+
+        /* ===== F. モダン・スレート（深いグレー） ===== */
+        .pattern-f .container {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e2e5e9;
+            overflow: hidden;
+        }
+        .pattern-f .header {
+            padding: 18px 24px;
+            background: #1e293b;
+        }
+        .pattern-f .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .pattern-f .header p {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+        .pattern-f .tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e5e9;
+            padding: 0 16px;
+            background: #f8fafc;
+        }
+        .pattern-f .tab {
+            padding: 11px 14px;
+            font-size: 13px;
+            color: #64748b;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        .pattern-f .tab.active {
+            color: #1e293b;
+            font-weight: 500;
+            border-bottom-color: #1e293b;
+            background: #fff;
+        }
+        .pattern-f .content { padding: 24px; }
+        .pattern-f .section {
+            background: #f8fafc;
+            border: 1px solid #e2e5e9;
+            border-radius: 6px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+        }
+        .pattern-f .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pattern-f .form-label {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 500;
+        }
+        .pattern-f .form-input, .pattern-f .form-textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #e2e5e9;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+        .pattern-f .form-input:focus, .pattern-f .form-textarea:focus {
+            outline: none;
+            border-color: #1e293b;
+        }
+        .pattern-f .form-textarea { min-height: 80px; resize: vertical; }
+        .pattern-f .btn {
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #1e293b;
+            color: white;
+        }
+        .pattern-f .btn:hover { background: #334155; }
+        .pattern-f .btn-secondary {
+            background: #f8fafc;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+        }
+        .pattern-f .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
         }
     </style>
 </head>
 <body>
-    <h1 style="text-align:center; margin-bottom:30px; color:#333;">デザインパターン比較</h1>
+    <h1 style="text-align:center; margin-bottom:30px; color:#333; font-size:22px;">クリーン・ミニマル バリエーション</h1>
 
     <div class="demo-grid">
-        <!-- 1. クリーン・ミニマル -->
-        <div class="minimal">
-            <div class="demo-label">1. クリーン・ミニマル (Notion/Linear風)</div>
+        <!-- A. ピュア・ミニマル -->
+        <div class="pattern-a">
+            <div class="demo-label">A. ピュア・ミニマル<span>モノトーン・シンプル</span></div>
             <div class="container">
                 <div class="header">
                     <h1>臨床推論サポート</h1>
@@ -449,9 +689,9 @@
             </div>
         </div>
 
-        <!-- 2. メディカル・プロ -->
-        <div class="medical">
-            <div class="demo-label">2. メディカル・プロ (電子カルテ風)</div>
+        <!-- B. ソフト・アクセント -->
+        <div class="pattern-b">
+            <div class="demo-label">B. ソフト・アクセント<span>淡いブルー・柔らかい印象</span></div>
             <div class="container">
                 <div class="header">
                     <h1>臨床推論サポート</h1>
@@ -479,9 +719,9 @@
             </div>
         </div>
 
-        <!-- 3. ダークモード -->
-        <div class="dark">
-            <div class="demo-label">3. ダークモード</div>
+        <!-- C. カード・シャドウ -->
+        <div class="pattern-c">
+            <div class="demo-label">C. カード・シャドウ<span>立体感・上質な印象</span></div>
             <div class="container">
                 <div class="header">
                     <h1>臨床推論サポート</h1>
@@ -509,9 +749,69 @@
             </div>
         </div>
 
-        <!-- 4. シンプル・ホワイト -->
-        <div class="simple">
-            <div class="demo-label">4. シンプル・ホワイト</div>
+        <!-- D. ボーダー・アクセント -->
+        <div class="pattern-d">
+            <div class="demo-label">D. ボーダー・アクセント<span>左線＋グリーン</span></div>
+            <div class="container">
+                <div class="header">
+                    <h1>臨床推論サポート</h1>
+                    <p>症例分析・治療計画管理</p>
+                </div>
+                <div class="tabs">
+                    <button class="tab active">基本情報</button>
+                    <button class="tab">仮説・治療</button>
+                    <button class="tab">評価</button>
+                    <button class="tab">症例分析</button>
+                </div>
+                <div class="content">
+                    <div class="section">
+                        <div class="section-title">患者情報</div>
+                        <label class="form-label">患者名</label>
+                        <input type="text" class="form-input" placeholder="例：A.T.">
+                        <label class="form-label">主訴</label>
+                        <textarea class="form-textarea" placeholder="主な訴えを入力"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn">保存</button>
+                        <button class="btn btn-secondary">CSV出力</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- E. ウォーム・ニュートラル -->
+        <div class="pattern-e">
+            <div class="demo-label">E. ウォーム・ニュートラル<span>温かみ・落ち着き</span></div>
+            <div class="container">
+                <div class="header">
+                    <h1>臨床推論サポート</h1>
+                    <p>症例分析・治療計画管理</p>
+                </div>
+                <div class="tabs">
+                    <button class="tab active">基本情報</button>
+                    <button class="tab">仮説・治療</button>
+                    <button class="tab">評価</button>
+                    <button class="tab">症例分析</button>
+                </div>
+                <div class="content">
+                    <div class="section">
+                        <div class="section-title">患者情報</div>
+                        <label class="form-label">患者名</label>
+                        <input type="text" class="form-input" placeholder="例：A.T.">
+                        <label class="form-label">主訴</label>
+                        <textarea class="form-textarea" placeholder="主な訴えを入力"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn">保存</button>
+                        <button class="btn btn-secondary">CSV出力</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- F. モダン・スレート -->
+        <div class="pattern-f">
+            <div class="demo-label">F. モダン・スレート<span>深いグレー・プロフェッショナル</span></div>
             <div class="container">
                 <div class="header">
                     <h1>臨床推論サポート</h1>
@@ -540,13 +840,15 @@
         </div>
     </div>
 
-    <div style="text-align:center; margin-top:40px; padding:20px; background:#fff; border-radius:8px; max-width:600px; margin-left:auto; margin-right:auto;">
-        <h3 style="margin-bottom:15px; color:#333;">各デザインの特徴</h3>
-        <div style="text-align:left; font-size:14px; color:#555; line-height:1.8;">
-            <p><strong>1. クリーン・ミニマル:</strong> 余白を活かした洗練されたデザイン。Notion/Linearのような現代的なSaaS感。</p>
-            <p><strong>2. メディカル・プロ:</strong> 電子カルテを意識した信頼感のあるデザイン。青をアクセントに使用。</p>
-            <p><strong>3. ダークモード:</strong> 目に優しく、長時間使用に適したダークテーマ。</p>
-            <p><strong>4. シンプル・ホワイト:</strong> 極限までシンプルに。コンテンツに集中できるデザイン。</p>
+    <div style="text-align:center; margin-top:40px; padding:24px; background:#fff; border-radius:8px; max-width:700px; margin-left:auto; margin-right:auto; border:1px solid #e5e5e5;">
+        <h3 style="margin-bottom:16px; color:#1a1a1a; font-size:16px;">どのパターンが良いですか？</h3>
+        <div style="text-align:left; font-size:13px; color:#555; line-height:2;">
+            <p><strong>A:</strong> 完全モノトーン、最もシンプル</p>
+            <p><strong>B:</strong> 淡いブルーで柔らかさ、フォーカス時に色が付く</p>
+            <p><strong>C:</strong> 影で立体感、カードが浮いている感じ</p>
+            <p><strong>D:</strong> 左線アクセント、ホバーで色が変わる</p>
+            <p><strong>E:</strong> 温かみのあるベージュ系、落ち着いた印象</p>
+            <p><strong>F:</strong> 濃いヘッダー、業務システム感</p>
         </div>
     </div>
 </body>
