@@ -825,6 +825,75 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // 初期データの定義（データマージ用）
+        const getInitialPatientData = () => ({
+            patientId: '',
+            createdDate: '',
+            basicInfo: {
+                name: '', age: '', gender: '', diagnosis: '',
+                chiefComplaint: '', lifeBackground: '', goalsShort: '', goalsLong: ''
+            },
+            evaluationSessions: [],
+            currentEvaluation: {
+                sessionDate: '',
+                difficultMovement: '', compensatoryPattern: '', painLocation: '',
+                romRestriction: '', muscleWeakness: '', coordination: '', balance: '',
+                causal_whys: ['', '', ''],
+                priority: '', hypothesis: ''
+            },
+            exerciseSessions: [],
+            currentExercise: {
+                sessionDate: '',
+                mainProblems: '', functionalLevel: '',
+                pathophysiology: '', evidenceBase: '', anatomyKinesiology: '',
+                targetImprovement: '', movementType: '', loadSetting: '', frequencyDuration: '',
+                selectedExercise: '', exerciseRationale: '',
+                manualTherapy: '', manualTherapyRationale: '',
+                physicalTherapy: '', physicalTherapyRationale: '',
+                immediateEffect: '', shortTermEffect: '', longTermEffect: '',
+                dataReview: '', warrantReview: '', claimModification: ''
+            },
+            caseAnalysis: {
+                cr1_q1: '', cr1_q1_reason: '', cr1_q2: '', cr1_q2_reason: '', cr1_q3: '', cr1_q3_reason: '', cr1_q4: '', cr1_q4_reason: '', cr1_reflection: '',
+                cr2_q1: '', cr2_q1_reason: '', cr2_q2: '', cr2_q2_reason: '', cr2_q3: '', cr2_q3_reason: '', cr2_q4: '', cr2_q4_reason: '', cr2_reflection: '',
+                cr3_q1: '', cr3_q1_reason: '', cr3_q2: '', cr3_q2_reason: '', cr3_q3: '', cr3_q3_reason: '',
+                cr3_q4: '', cr3_q4_reason: '', cr3_q5: '', cr3_q5_reason: '', cr3_q6: '', cr3_q6_reason: '',
+                cr3_q7: '', cr3_q7_reason: '', cr3_reflection: '',
+                triangleData: '', triangleWarrant: '', triangleClaim: '',
+                flowchartHypotheses: [{id: 1, hypothesis: '', findings: ''}],
+                flowchartData: null,
+                isGeneratingFlowchart: false,
+                flowchartError: null,
+                treatmentPlans: [],
+                exercise1: '', exercise2: '', exercise3: '',
+                immediateEffect: '', shortTermEffect: '', longTermEffect: '',
+                whatWorked: '', whatDidntWork: '',
+                dataInsufficient: false, warrantUnclear: false, claimLeap: false,
+                additionalEvaluation: '', exerciseChanges: '', patientInteraction: '',
+                learnings: '', patterns: '', nextApplication: ''
+            }
+        });
+
+        // 保存されたデータを初期データとマージするヘルパー関数
+        const mergeWithInitialData = (savedData) => {
+            const initial = getInitialPatientData();
+            return {
+                ...initial,
+                ...savedData,
+                basicInfo: { ...initial.basicInfo, ...(savedData.basicInfo || {}) },
+                currentEvaluation: { ...initial.currentEvaluation, ...(savedData.currentEvaluation || {}) },
+                currentExercise: { ...initial.currentExercise, ...(savedData.currentExercise || {}) },
+                caseAnalysis: {
+                    ...initial.caseAnalysis,
+                    ...(savedData.caseAnalysis || {}),
+                    flowchartHypotheses: savedData.caseAnalysis?.flowchartHypotheses || initial.caseAnalysis.flowchartHypotheses,
+                    treatmentPlans: savedData.caseAnalysis?.treatmentPlans || initial.caseAnalysis.treatmentPlans
+                },
+                evaluationSessions: savedData.evaluationSessions || initial.evaluationSessions,
+                exerciseSessions: savedData.exerciseSessions || initial.exerciseSessions
+            };
+        };
+
         function App() {
             const [activeTab, setActiveTab] = useState('basic');
             const [showToast, setShowToast] = useState(false);
@@ -839,53 +908,7 @@
             const autoSaveTimerRef = useRef(null);
 
             // 統合患者データ（セッション対応）
-            const [patientData, setPatientData] = useState({
-                patientId: '',
-                createdDate: '',
-                basicInfo: {
-                    name: '', age: '', gender: '', diagnosis: '',
-                    chiefComplaint: '', lifeBackground: '', goalsShort: '', goalsLong: ''
-                },
-                evaluationSessions: [],
-                currentEvaluation: {
-                    sessionDate: '',
-                    difficultMovement: '', compensatoryPattern: '', painLocation: '',
-                    romRestriction: '', muscleWeakness: '', coordination: '', balance: '',
-                    causal_whys: ['', '', ''],
-                    priority: '', hypothesis: ''
-                },
-                exerciseSessions: [],
-                currentExercise: {
-                    sessionDate: '',
-                    mainProblems: '', functionalLevel: '',
-                    pathophysiology: '', evidenceBase: '', anatomyKinesiology: '',
-                    targetImprovement: '', movementType: '', loadSetting: '', frequencyDuration: '',
-                    selectedExercise: '', exerciseRationale: '',
-                    manualTherapy: '', manualTherapyRationale: '',
-                    physicalTherapy: '', physicalTherapyRationale: '',
-                    immediateEffect: '', shortTermEffect: '', longTermEffect: '',
-                    dataReview: '', warrantReview: '', claimModification: ''
-                },
-                caseAnalysis: {
-                    cr1_q1: '', cr1_q1_reason: '', cr1_q2: '', cr1_q2_reason: '', cr1_q3: '', cr1_q3_reason: '', cr1_q4: '', cr1_q4_reason: '', cr1_reflection: '',
-                    cr2_q1: '', cr2_q1_reason: '', cr2_q2: '', cr2_q2_reason: '', cr2_q3: '', cr2_q3_reason: '', cr2_q4: '', cr2_q4_reason: '', cr2_reflection: '',
-                    cr3_q1: '', cr3_q1_reason: '', cr3_q2: '', cr3_q2_reason: '', cr3_q3: '', cr3_q3_reason: '',
-                    cr3_q4: '', cr3_q4_reason: '', cr3_q5: '', cr3_q5_reason: '', cr3_q6: '', cr3_q6_reason: '',
-                    cr3_q7: '', cr3_q7_reason: '', cr3_reflection: '',
-                    triangleData: '', triangleWarrant: '', triangleClaim: '',
-                    flowchartHypotheses: [{id: 1, hypothesis: '', findings: ''}],
-                    flowchartData: null,
-                    isGeneratingFlowchart: false,
-                    flowchartError: null,
-                    treatmentPlans: [],
-                    exercise1: '', exercise2: '', exercise3: '',
-                    immediateEffect: '', shortTermEffect: '', longTermEffect: '',
-                    whatWorked: '', whatDidntWork: '',
-                    dataInsufficient: false, warrantUnclear: false, claimLeap: false,
-                    additionalEvaluation: '', exerciseChanges: '', patientInteraction: '',
-                    learnings: '', patterns: '', nextApplication: ''
-                }
-            });
+            const [patientData, setPatientData] = useState(getInitialPatientData());
 
             useEffect(() => {
                 const saved = localStorage.getItem('savedPatients_v3');
@@ -898,7 +921,7 @@
                 if (tempData) {
                     try {
                         const parsedData = JSON.parse(tempData);
-                        setPatientData(parsedData);
+                        setPatientData(mergeWithInitialData(parsedData));
                         setAutoSaveStatus('前回の入力を復元しました');
                         setTimeout(() => setAutoSaveStatus(''), 3000);
                     } catch (error) {
@@ -1787,7 +1810,7 @@
 
                 const found = savedPatients.find(p => p.patientId === searchId);
                 if (found) {
-                    setPatientData(found);
+                    setPatientData(mergeWithInitialData(found));
                     showMessage(`患者ID: ${searchId} を読み込みました`);
                     setShowSearchPanel(false);
                 } else {
@@ -1796,7 +1819,7 @@
             };
 
             const handleLoad = (data) => {
-                setPatientData(data);
+                setPatientData(mergeWithInitialData(data));
                 showMessage(`患者ID: ${data.patientId} を読み込みました`);
                 setShowSearchPanel(false);
             };
