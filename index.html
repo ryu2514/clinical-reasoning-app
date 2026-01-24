@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -472,6 +473,120 @@
         .notification-banner-hint {
             font-size: 12px;
             color: #94a3b8;
+        }
+
+        /* 管理者モード */
+        .admin-toggle {
+            padding: 8px 16px;
+            margin: 16px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .admin-toggle:hover {
+            background: #e2e8f0;
+        }
+
+        .admin-form {
+            padding: 16px;
+            background: #f8fafc;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .admin-form h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .admin-form-group {
+            margin-bottom: 12px;
+        }
+
+        .admin-form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .admin-form-group input,
+        .admin-form-group textarea,
+        .admin-form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .admin-form-group textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .admin-form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .admin-form-actions button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-admin-save {
+            background: #3b82f6;
+            color: white;
+            border: none;
+        }
+
+        .btn-admin-cancel {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-admin-delete {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+        }
+
+        .notification-item-actions {
+            display: flex;
+            gap: 8px;
+            padding: 8px 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .notification-item-actions button {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-edit {
+            background: #eff6ff;
+            color: #3b82f6;
+            border: none;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
         }
 
         .tabs {
@@ -1390,33 +1505,10 @@
             };
         };
 
-        // お知らせデータ
-        const notificationsData = [
-            {
-                id: 1,
-                tag: '動画',
-                date: '2026年1月24日',
-                title: '【限定公開】運動療法の組み立て方 完全解説',
-                description: '臨床推論に基づいた運動療法の選択方法を解説しています。このアプリの使い方と合わせてご覧ください。',
-                link: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-            },
-            {
-                id: 2,
-                tag: 'お知らせ',
-                date: '2026年1月24日',
-                title: 'スプラッシュスクリーン機能を追加しました',
-                description: 'アプリ起動時にThink Clarityのロゴが表示されるようになりました。6つのフレーズからランダムで表示されます。',
-                link: null
-            },
-            {
-                id: 3,
-                tag: 'お知らせ',
-                date: '2026年1月20日',
-                title: '臨床推論統合アプリをリリースしました',
-                description: '症例分析、評価フローチャート、運動療法選択を一つのアプリで管理できるようになりました。患者データの保存・読み込み機能も搭載しています。',
-                link: null
-            }
-        ];
+        // Supabase クライアント初期化
+        const SUPABASE_URL = 'https://nxliafdyfvocehhrvsex.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bGlhZmR5ZnZvY2VoaHJ2c2V4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNDQxMzMsImV4cCI6MjA4NDgyMDEzM30._JP6NvhgOfIj39hW5f3ZWYuJ6d_UtcWpzUGS0mCjmnU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         function App() {
             const [activeTab, setActiveTab] = useState('basic');
@@ -1434,10 +1526,28 @@
             // お知らせ関連の状態
             const [showNotificationPanel, setShowNotificationPanel] = useState(false);
             const [expandedNotification, setExpandedNotification] = useState(null);
+            const [notificationsData, setNotificationsData] = useState([]);
             const [dismissedNotifications, setDismissedNotifications] = useState(() => {
                 const saved = localStorage.getItem('dismissedNotifications');
                 return saved ? JSON.parse(saved) : [];
             });
+
+            // Supabaseからお知らせを取得
+            useEffect(() => {
+                const fetchNotifications = async () => {
+                    const { data, error } = await supabase
+                        .from('notifications')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) {
+                        console.error('お知らせの取得に失敗:', error);
+                    } else {
+                        setNotificationsData(data || []);
+                    }
+                };
+                fetchNotifications();
+            }, []);
 
             const activeNotifications = notificationsData.filter(n => !dismissedNotifications.includes(n.id));
 
@@ -1449,16 +1559,119 @@
 
             // お知らせバナー（自動表示）
             const [showNotificationBanner, setShowNotificationBanner] = useState(false);
+            const bannerShownRef = useRef(false);
 
             useEffect(() => {
-                // スプラッシュスクリーン後にお知らせバナーを表示
-                const timer = setTimeout(() => {
-                    if (activeNotifications.length > 0) {
+                // Supabaseからデータ取得後、スプラッシュスクリーン後にお知らせバナーを表示
+                if (activeNotifications.length > 0 && !bannerShownRef.current) {
+                    const timer = setTimeout(() => {
                         setShowNotificationBanner(true);
+                        bannerShownRef.current = true;
+                    }, 2300); // スプラッシュ（1.8秒）+ 少し遅延
+                    return () => clearTimeout(timer);
+                }
+            }, [activeNotifications]);
+
+            // 管理者モード
+            const [isAdminMode, setIsAdminMode] = useState(false);
+            const [showAddForm, setShowAddForm] = useState(false);
+            const [editingNotification, setEditingNotification] = useState(null);
+            const [newNotification, setNewNotification] = useState({
+                tag: 'お知らせ',
+                date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
+                title: '',
+                description: '',
+                link: ''
+            });
+
+            const toggleAdminMode = () => {
+                if (!isAdminMode) {
+                    const password = prompt('管理者パスワードを入力してください');
+                    if (password === 'think2026') {
+                        setIsAdminMode(true);
+                    } else if (password !== null) {
+                        alert('パスワードが違います');
                     }
-                }, 2300); // スプラッシュ（1.8秒）+ 少し遅延
-                return () => clearTimeout(timer);
-            }, []);
+                } else {
+                    setIsAdminMode(false);
+                    setShowAddForm(false);
+                    setEditingNotification(null);
+                }
+            };
+
+            const handleAddNotification = async () => {
+                if (!newNotification.title) {
+                    alert('タイトルを入力してください');
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('notifications')
+                    .insert([{
+                        tag: newNotification.tag,
+                        date: newNotification.date,
+                        title: newNotification.title,
+                        description: newNotification.description,
+                        link: newNotification.link || null
+                    }])
+                    .select();
+
+                if (error) {
+                    alert('追加に失敗しました: ' + error.message);
+                } else {
+                    setNotificationsData([data[0], ...notificationsData]);
+                    setNewNotification({
+                        tag: 'お知らせ',
+                        date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
+                        title: '',
+                        description: '',
+                        link: ''
+                    });
+                    setShowAddForm(false);
+                }
+            };
+
+            const handleEditNotification = async () => {
+                if (!editingNotification.title) {
+                    alert('タイトルを入力してください');
+                    return;
+                }
+
+                const { error } = await supabase
+                    .from('notifications')
+                    .update({
+                        tag: editingNotification.tag,
+                        date: editingNotification.date,
+                        title: editingNotification.title,
+                        description: editingNotification.description,
+                        link: editingNotification.link || null
+                    })
+                    .eq('id', editingNotification.id);
+
+                if (error) {
+                    alert('更新に失敗しました: ' + error.message);
+                } else {
+                    setNotificationsData(notificationsData.map(n =>
+                        n.id === editingNotification.id ? editingNotification : n
+                    ));
+                    setEditingNotification(null);
+                }
+            };
+
+            const handleDeleteNotification = async (id) => {
+                if (!confirm('このお知らせを削除しますか？')) return;
+
+                const { error } = await supabase
+                    .from('notifications')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    alert('削除に失敗しました: ' + error.message);
+                } else {
+                    setNotificationsData(notificationsData.filter(n => n.id !== id));
+                }
+            };
 
             const closeBanner = (e) => {
                 if (e) e.stopPropagation();
@@ -2602,13 +2815,94 @@
                             <h2>お知らせ</h2>
                             <button className="notification-close" onClick={() => setShowNotificationPanel(false)}>×</button>
                         </div>
+
+                        {/* 管理者トグル */}
+                        <button className="admin-toggle" onClick={toggleAdminMode}>
+                            {isAdminMode ? '管理者モードを終了' : '管理者モード'}
+                        </button>
+
+                        {/* 新規追加フォーム */}
+                        {isAdminMode && showAddForm && (
+                            <div className="admin-form">
+                                <h3>新しいお知らせを追加</h3>
+                                <div className="admin-form-group">
+                                    <label>タグ</label>
+                                    <select value={newNotification.tag} onChange={(e) => setNewNotification({...newNotification, tag: e.target.value})}>
+                                        <option value="お知らせ">お知らせ</option>
+                                        <option value="動画">動画</option>
+                                    </select>
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>日付</label>
+                                    <input type="text" value={newNotification.date} onChange={(e) => setNewNotification({...newNotification, date: e.target.value})} />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>タイトル *</label>
+                                    <input type="text" value={newNotification.title} onChange={(e) => setNewNotification({...newNotification, title: e.target.value})} placeholder="タイトルを入力" />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>説明</label>
+                                    <textarea value={newNotification.description} onChange={(e) => setNewNotification({...newNotification, description: e.target.value})} placeholder="説明を入力" />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>リンク（YouTube等）</label>
+                                    <input type="text" value={newNotification.link} onChange={(e) => setNewNotification({...newNotification, link: e.target.value})} placeholder="https://..." />
+                                </div>
+                                <div className="admin-form-actions">
+                                    <button className="btn-admin-save" onClick={handleAddNotification}>追加</button>
+                                    <button className="btn-admin-cancel" onClick={() => setShowAddForm(false)}>キャンセル</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 編集フォーム */}
+                        {isAdminMode && editingNotification && (
+                            <div className="admin-form">
+                                <h3>お知らせを編集</h3>
+                                <div className="admin-form-group">
+                                    <label>タグ</label>
+                                    <select value={editingNotification.tag} onChange={(e) => setEditingNotification({...editingNotification, tag: e.target.value})}>
+                                        <option value="お知らせ">お知らせ</option>
+                                        <option value="動画">動画</option>
+                                    </select>
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>日付</label>
+                                    <input type="text" value={editingNotification.date} onChange={(e) => setEditingNotification({...editingNotification, date: e.target.value})} />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>タイトル *</label>
+                                    <input type="text" value={editingNotification.title} onChange={(e) => setEditingNotification({...editingNotification, title: e.target.value})} />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>説明</label>
+                                    <textarea value={editingNotification.description || ''} onChange={(e) => setEditingNotification({...editingNotification, description: e.target.value})} />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>リンク（YouTube等）</label>
+                                    <input type="text" value={editingNotification.link || ''} onChange={(e) => setEditingNotification({...editingNotification, link: e.target.value})} />
+                                </div>
+                                <div className="admin-form-actions">
+                                    <button className="btn-admin-save" onClick={handleEditNotification}>保存</button>
+                                    <button className="btn-admin-cancel" onClick={() => setEditingNotification(null)}>キャンセル</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 新規追加ボタン */}
+                        {isAdminMode && !showAddForm && !editingNotification && (
+                            <button className="admin-toggle" style={{background: '#3b82f6', color: 'white'}} onClick={() => setShowAddForm(true)}>
+                                + 新しいお知らせを追加
+                            </button>
+                        )}
+
                         <div className="notification-list">
-                            {activeNotifications.length === 0 ? (
+                            {notificationsData.length === 0 ? (
                                 <div className="notification-empty">
                                     <p>お知らせはありません</p>
                                 </div>
                             ) : (
-                                activeNotifications.map(notification => (
+                                notificationsData.map(notification => (
                                     <div key={notification.id} className="notification-item">
                                         <div className="notification-item-header" onClick={() => setExpandedNotification(expandedNotification === notification.id ? null : notification.id)}>
                                             <div className="notification-icon">
@@ -2638,8 +2932,16 @@
                                                         </svg>
                                                     </a>
                                                 )}
-                                                <button className="btn-dismiss" onClick={() => dismissNotification(notification.id)}>通知を消す</button>
+                                                {!isAdminMode && (
+                                                    <button className="btn-dismiss" onClick={() => dismissNotification(notification.id)}>通知を消す</button>
+                                                )}
                                             </div>
+                                            {isAdminMode && (
+                                                <div className="notification-item-actions">
+                                                    <button className="btn-edit" onClick={() => setEditingNotification(notification)}>編集</button>
+                                                    <button className="btn-delete" onClick={() => handleDeleteNotification(notification.id)}>削除</button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))
