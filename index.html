@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臨床推論統合アプリ</title>
+    <title>臨床推論サポート</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,8 +19,8 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
+            font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f4f8;
             min-height: 100vh;
             padding: 20px;
         }
@@ -25,125 +28,129 @@
         .container {
             max-width: 1000px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid rgba(59,130,246,0.15);
             overflow: hidden;
+            box-shadow: 0 4px 24px rgba(59,130,246,0.08);
         }
 
         .header {
-            background: linear-gradient(135deg, #90caf9 0%, #81c784 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            padding: 22px 28px;
+            background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+            border-bottom: 1px solid rgba(59,130,246,0.1);
         }
 
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            letter-spacing: -0.3px;
         }
 
         .header p {
-            opacity: 0.9;
-            font-size: 14px;
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
         }
 
         .tabs {
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e2e8f0;
+            padding: 12px 20px 0;
+            gap: 4px;
+            background: #fafbfd;
             overflow-x: auto;
         }
 
         .tab {
-            padding: 16px 24px;
-            cursor: pointer;
+            padding: 11px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
             border: none;
             background: transparent;
-            font-size: 15px;
-            font-weight: 500;
-            color: #718096;
-            transition: all 0.3s;
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.2s;
             white-space: nowrap;
-            border-bottom: 3px solid transparent;
         }
 
         .tab:hover {
-            background: #e2e8f0;
-            color: #2d3748;
+            color: #3b82f6;
         }
 
         .tab.active {
-            color: #64b5f6;
-            border-bottom-color: #64b5f6;
-            background: white;
+            color: #3b82f6;
+            background: #fff;
+            box-shadow: 0 -2px 10px rgba(59,130,246,0.08);
         }
 
         .content {
-            padding: 30px;
-            max-height: calc(100vh - 250px);
+            padding: 28px;
+            max-height: calc(100vh - 200px);
             overflow-y: auto;
         }
 
         .section {
-            margin-bottom: 35px;
-            padding: 25px;
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+            border: 1px solid rgba(59,130,246,0.12);
             border-radius: 12px;
-            border-left: 4px solid #64b5f6;
+            padding: 22px;
+            margin-bottom: 18px;
         }
 
         .section-title {
-            font-size: 20px;
+            font-size: 15px;
             font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 20px;
+            color: #1e293b;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 10px;
         }
 
         .section-title::before {
-            content: '●';
-            color: #64b5f6;
-            margin-right: 10px;
-            font-size: 24px;
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #3b82f6, #60a5fa);
+            border-radius: 2px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-label {
             display: block;
             font-weight: 500;
-            color: #4a5568;
+            color: #475569;
             margin-bottom: 8px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .form-input, .form-textarea, .form-select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 14px;
-            transition: all 0.3s;
+            transition: all 0.2s;
             font-family: inherit;
-            color: #1a202c;
-            background-color: #ffffff;
-            -webkit-text-fill-color: #1a202c;
+            color: #1e293b;
+            background-color: #fff;
+            -webkit-text-fill-color: #1e293b;
         }
 
         .form-input::placeholder, .form-textarea::placeholder {
-            color: #a0aec0;
+            color: #94a3b8;
             opacity: 1;
         }
 
         .form-input:focus, .form-textarea:focus, .form-select:focus {
             outline: none;
-            border-color: #64b5f6;
-            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.1);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
         }
 
         .form-textarea {
@@ -164,40 +171,42 @@
             gap: 8px;
             cursor: pointer;
             user-select: none;
+            font-size: 14px;
+            color: #475569;
         }
 
         .checkbox-label input[type="checkbox"],
         .checkbox-label input[type="radio"] {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             cursor: pointer;
-            accent-color: #64b5f6;
+            accent-color: #3b82f6;
         }
 
         .cr-item {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
+            background: #fff;
+            padding: 16px;
+            border-radius: 10px;
             margin-bottom: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid rgba(59,130,246,0.1);
         }
 
         .button-group {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 12px;
+            margin-top: 24px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 14px 30px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -206,65 +215,74 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #64b5f6 0%, #81c784 100%);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(100, 181, 246, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
         }
 
         .btn-secondary {
-            background: white;
-            color: #64b5f6;
-            border: 2px solid #64b5f6;
-            -webkit-text-fill-color: #64b5f6;
+            background: #fff;
+            color: #3b82f6;
+            border: 1.5px solid #3b82f6;
+            -webkit-text-fill-color: #3b82f6;
+            box-shadow: none;
         }
 
         .btn-secondary:hover {
-            background: #64b5f6;
-            color: white;
-            -webkit-text-fill-color: white;
+            background: #f8faff;
+            transform: translateY(-1px);
         }
 
         .btn-success {
-            background: #81e6d9;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
         }
 
         .btn-success:hover {
-            background: #4fd1c5;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(129, 230, 217, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16,185,129,0.35);
         }
 
         .btn-warning {
-            background: #fbbf24;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.3);
         }
 
         .btn-warning:hover {
-            background: #f59e0b;
-            transform: translateY(-2px);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(245,158,11,0.35);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
         }
 
         .btn-small {
             padding: 8px 16px;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .toast {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: #81c784;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            padding: 16px 24px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            padding: 14px 22px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.3);
             animation: slideIn 0.3s ease-out;
             z-index: 1000;
+            font-size: 14px;
         }
 
         @keyframes slideIn {
@@ -279,32 +297,32 @@
         }
 
         .subsection {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(59,130,246,0.1);
         }
 
         .subsection-title {
             font-weight: 600;
-            color: #64b5f6;
+            color: #3b82f6;
             margin-bottom: 12px;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         .id-section {
-            background: #e1f5fe;
+            background: linear-gradient(135deg, #eff6ff 0%, #fff 100%);
             padding: 20px;
             border-radius: 12px;
-            margin-bottom: 25px;
-            border-left: 4px solid #64b5f6;
+            margin-bottom: 20px;
+            border: 1px solid rgba(59,130,246,0.15);
         }
 
         .common-info-section {
-            background: #fff3e0;
-            padding: 20px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+            padding: 18px;
             border-radius: 12px;
-            margin-bottom: 25px;
-            border-left: 4px solid #ffa726;
+            margin-bottom: 20px;
+            border: 1px solid rgba(245,158,11,0.2);
         }
 
         .id-row {
@@ -315,68 +333,69 @@
 
         .help-text {
             font-size: 12px;
-            color: #4a5568;
+            color: #64748b;
             margin-top: 4px;
             font-style: italic;
         }
 
         .info-badge {
             display: inline-block;
-            background: #ffa726;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
             padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 600;
             margin-left: 10px;
         }
 
         .session-badge {
             display: inline-block;
-            background: #64b5f6;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 600;
             margin-left: 10px;
         }
 
         .inherit-notice {
-            background: #e8f5e9;
+            background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
             padding: 12px 16px;
-            border-radius: 8px;
-            border-left: 3px solid #4caf50;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #2e7d32;
+            border-radius: 10px;
+            border-left: 3px solid #10b981;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: #065f46;
         }
 
         .session-history {
-            background: #f1f5f9;
-            padding: 20px;
+            background: #f8fafc;
+            padding: 18px;
             border-radius: 12px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
         }
 
         .session-item {
             background: white;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 14px;
+            border-radius: 10px;
             margin-bottom: 10px;
-            border-left: 4px solid #94a3b8;
+            border-left: 3px solid #cbd5e1;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .session-item:hover {
-            border-left-color: #64b5f6;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.1);
         }
 
         .session-item.active {
-            border-left-color: #64b5f6;
-            background: #e3f2fd;
+            border-left-color: #3b82f6;
+            background: #eff6ff;
         }
 
         .session-header {
@@ -388,12 +407,13 @@
 
         .session-date {
             font-weight: 600;
-            color: #2d3748;
+            color: #1e293b;
+            font-size: 14px;
         }
 
         .session-preview {
-            font-size: 13px;
-            color: #718096;
+            font-size: 12px;
+            color: #64748b;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -405,21 +425,22 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(15,23,42,0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
             padding: 20px;
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
             background: white;
             border-radius: 16px;
-            padding: 30px;
+            padding: 28px;
             max-width: 500px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
 
         .modal-header {
@@ -427,15 +448,16 @@
         }
 
         .modal-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
-            color: #2d3748;
+            color: #1e293b;
             margin-bottom: 10px;
         }
 
         .modal-text {
-            color: #718096;
+            color: #64748b;
             line-height: 1.6;
+            font-size: 14px;
         }
 
         .modal-actions {
@@ -451,23 +473,24 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(15,23,42,0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
             padding: 20px;
+            backdrop-filter: blur(4px);
         }
 
         .search-content {
             background: white;
             border-radius: 16px;
-            padding: 30px;
+            padding: 28px;
             max-width: 600px;
             width: 100%;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
 
         .search-header {
@@ -478,30 +501,30 @@
         }
 
         .search-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
-            color: #2d3748;
+            color: #1e293b;
         }
 
         .close-btn {
             background: none;
             border: none;
-            font-size: 28px;
-            color: #a0aec0;
+            font-size: 24px;
+            color: #94a3b8;
             cursor: pointer;
             padding: 0;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
+            border-radius: 10px;
+            transition: all 0.2s;
         }
 
         .close-btn:hover {
-            background: #f7fafc;
-            color: #2d3748;
+            background: #f1f5f9;
+            color: #1e293b;
         }
 
         .search-box {
@@ -512,25 +535,34 @@
 
         .search-input {
             flex: 1;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
         }
 
         .btn-search {
-            background: #64b5f6;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
         }
 
         .btn-search:hover {
-            background: #42a5f5;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
         }
 
         .case-list {
@@ -538,14 +570,20 @@
         }
 
         .case-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
+            background: #f8fafc;
+            padding: 14px 16px;
+            border-radius: 10px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid #64b5f6;
+            border-left: 3px solid #93c5fd;
+            transition: all 0.2s;
+        }
+
+        .case-item:hover {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
         }
 
         .case-info {
@@ -554,13 +592,14 @@
 
         .case-id {
             font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 5px;
+            color: #1e293b;
+            margin-bottom: 4px;
+            font-size: 14px;
         }
 
         .case-date {
             font-size: 12px;
-            color: #718096;
+            color: #64748b;
         }
 
         .case-actions {
@@ -569,21 +608,33 @@
         }
 
         .btn-load {
-            background: #81e6d9;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-load:hover {
-            background: #4fd1c5;
+            transform: translateY(-1px);
         }
 
         .btn-delete {
-            background: #fca5a5;
+            background: linear-gradient(135deg, #f87171, #ef4444);
             color: white;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-delete:hover {
-            background: #f87171;
+            transform: translateY(-1px);
         }
 
         @media (max-width: 768px) {
@@ -735,12 +786,12 @@
         }
 
         .achievement-section {
-            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            background: linear-gradient(135deg, #eff6ff 0%, #f8faff 100%);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 25px;
-            border-left: 4px solid #64b5f6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(59,130,246,0.15);
+            box-shadow: 0 4px 16px rgba(59,130,246,0.08);
         }
 
         .achievement-header {
@@ -751,24 +802,24 @@
         }
 
         .achievement-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
-            color: #2d3748;
+            color: #1e293b;
         }
 
         .achievement-percentage {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
-            color: #64b5f6;
+            color: #3b82f6;
         }
 
         .progress-bar-container {
             width: 100%;
-            height: 30px;
+            height: 26px;
             background: #e2e8f0;
-            border-radius: 15px;
+            border-radius: 13px;
             overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
         }
 
         .progress-bar-fill {
@@ -780,27 +831,27 @@
             padding-right: 10px;
             color: white;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .progress-high {
-            background: linear-gradient(90deg, #81c784 0%, #4caf50 100%);
+            background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
         }
 
         .progress-medium {
-            background: linear-gradient(90deg, #ffd54f 0%, #ffc107 100%);
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
         }
 
         .progress-low {
-            background: linear-gradient(90deg, #ff8a65 0%, #f44336 100%);
+            background: linear-gradient(90deg, #f87171 0%, #ef4444 100%);
         }
 
         .achievement-details {
             margin-top: 12px;
             display: flex;
             gap: 20px;
-            font-size: 14px;
-            color: #4a5568;
+            font-size: 13px;
+            color: #64748b;
         }
 
         .achievement-stat {
@@ -810,7 +861,7 @@
         }
 
         .achievement-stat strong {
-            color: #2d3748;
+            color: #1e293b;
         }
 
         @keyframes spin {
@@ -1989,11 +2040,11 @@
                                     <button className="btn-search" onClick={handleSearch}>検索</button>
                                 </div>
                                 <div className="case-list">
-                                    <h3 style={{marginBottom: '15px', color: '#4a5568', fontSize: '16px'}}>
+                                    <h3 style={{marginBottom: '15px', color: '#1e293b', fontSize: '15px', fontWeight: '600'}}>
                                         保存済み患者（{savedPatients.length}名）
                                     </h3>
                                     {savedPatients.length === 0 ? (
-                                        <p style={{color: '#a0aec0', textAlign: 'center', padding: '20px'}}>保存されている患者がいません</p>
+                                        <p style={{color: '#94a3b8', textAlign: 'center', padding: '20px'}}>保存されている患者がいません</p>
                                     ) : (
                                         savedPatients.slice().reverse().map((patient, index) => (
                                             <div key={index} className="case-item">
@@ -2292,7 +2343,7 @@
                                     <React.Fragment key={index}>
                                         <div style={{display: 'flex', gap: '10px', alignItems: 'flex-start'}}>
                                             <div style={{flex: 1}}>
-                                                <label className="form-label" style={{fontSize: '13px', color: '#64b5f6'}}>
+                                                <label className="form-label" style={{fontSize: '13px', color: '#3b82f6'}}>
                                                     なぜ{index + 1}
                                                     {index === 0 && ' （表面的な問題）'}
                                                     {index === patientData.currentEvaluation.causal_whys.length - 1 && index > 0 && ' （根本原因）'}
@@ -2325,15 +2376,15 @@
                                             )}
                                         </div>
                                         {index < patientData.currentEvaluation.causal_whys.length - 1 && (
-                                            <div style={{textAlign: 'center', color: '#64b5f6', fontWeight: 'bold', fontSize: '18px'}}>↓</div>
+                                            <div style={{textAlign: 'center', color: '#3b82f6', fontWeight: '600', fontSize: '18px'}}>↓</div>
                                         )}
                                     </React.Fragment>
                                 ))}
                             </div>
                             {patientData.currentEvaluation.causal_whys.filter(x => x).length > 0 && (
-                                <div style={{marginTop: '15px', padding: '12px', background: '#e3f2fd', borderRadius: '8px', borderLeft: '3px solid #64b5f6'}}>
-                                    <strong style={{color: '#1976d2'}}>因果関係：</strong>
-                                    <span style={{color: '#424242'}}>
+                                <div style={{marginTop: '15px', padding: '12px', background: '#eff6ff', borderRadius: '10px', borderLeft: '3px solid #3b82f6'}}>
+                                    <strong style={{color: '#2563eb'}}>因果関係：</strong>
+                                    <span style={{color: '#1e293b'}}>
                                         {patientData.currentEvaluation.causal_whys.filter(x => x).join(' → ')}
                                     </span>
                                 </div>
