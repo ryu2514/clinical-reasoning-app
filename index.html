@@ -1922,21 +1922,11 @@
                     </div>
 
                     <div className="tabs">
-                        <button className={`tab ${activeTab === 'basic' ? 'active' : ''}`} onClick={() => setActiveTab('basic')}>
-                            📝 基本情報
-                        </button>
-                        <button className={`tab ${activeTab === 'hypothesis' ? 'active' : ''}`} onClick={() => setActiveTab('hypothesis')}>
-                            💡 仮説・治療
-                        </button>
-                        <button className={`tab ${activeTab === 'eval' ? 'active' : ''}`} onClick={() => setActiveTab('eval')}>
-                            🔍 評価
-                        </button>
-                        <button className={`tab ${activeTab === 'case' ? 'active' : ''}`} onClick={() => setActiveTab('case')}>
-                            📋 症例分析
-                        </button>
-                        <button className={`tab ${activeTab === 'exercise' ? 'active' : ''}`} onClick={() => setActiveTab('exercise')}>
-                            💊 治療介入
-                        </button>
+                        <button className={`tab ${activeTab === 'basic' ? 'active' : ''}`} onClick={() => setActiveTab('basic')}>基本情報</button>
+                        <button className={`tab ${activeTab === 'hypothesis' ? 'active' : ''}`} onClick={() => setActiveTab('hypothesis')}>仮説・治療</button>
+                        <button className={`tab ${activeTab === 'eval' ? 'active' : ''}`} onClick={() => setActiveTab('eval')}>評価</button>
+                        <button className={`tab ${activeTab === 'case' ? 'active' : ''}`} onClick={() => setActiveTab('case')}>症例分析</button>
+                        <button className={`tab ${activeTab === 'exercise' ? 'active' : ''}`} onClick={() => setActiveTab('exercise')}>治療介入</button>
                     </div>
 
                     <div className="content">
@@ -1998,10 +1988,10 @@
                         )}
 
                         <div className="button-group">
-                            <button className="btn btn-primary" onClick={handleSave}>💾 保存</button>
-                            <button className="btn btn-success" onClick={handleExportCSV}>📊 CSV出力</button>
-                            <button className="btn btn-secondary" onClick={() => setShowSearchPanel(true)}>🔍 検索</button>
-                            <button className="btn btn-secondary" onClick={handleClear}>🗑️ クリア</button>
+                            <button className="btn btn-primary" onClick={handleSave}>保存</button>
+                            <button className="btn btn-success" onClick={handleExportCSV}>CSV出力</button>
+                            <button className="btn btn-secondary" onClick={() => setShowSearchPanel(true)}>検索</button>
+                            <button className="btn btn-secondary" onClick={handleClear}>クリア</button>
                         </div>
                     </div>
 
@@ -2085,7 +2075,7 @@
                     </div>
 
                     <div className="section" style={{borderLeftColor: '#f59e0b'}}>
-                        <h2 className="section-title">💡 現在の仮説</h2>
+                        <h2 className="section-title">現在の仮説</h2>
                         <p style={{color: '#666', fontSize: '14px', marginBottom: '15px'}}>
                             この患者の症状について、今どのような仮説を持っていますか？
                         </p>
@@ -2102,7 +2092,7 @@
                     </div>
 
                     <div className="section" style={{borderLeftColor: '#10b981'}}>
-                        <h2 className="section-title">💊 現在行っている治療</h2>
+                        <h2 className="section-title">現在行っている治療</h2>
                         <p style={{color: '#666', fontSize: '14px', marginBottom: '15px'}}>
                             今、どのような治療・介入を行っていますか？
                         </p>
@@ -2119,7 +2109,7 @@
                     </div>
 
                     <div className="section" style={{borderLeftColor: '#8b5cf6'}}>
-                        <h2 className="section-title">📝 治療選択の理由</h2>
+                        <h2 className="section-title">治療選択の理由</h2>
                         <p style={{color: '#666', fontSize: '14px', marginBottom: '15px'}}>
                             なぜその治療を選択したのですか？仮説との関連を説明してください。
                         </p>
@@ -2136,7 +2126,7 @@
                     </div>
 
                     <div className="info-box" style={{background: '#fef3c7', border: '1px solid #f59e0b', marginTop: '20px'}}>
-                        <h3 style={{color: '#92400e', marginBottom: '10px'}}>📌 このタブの使い方</h3>
+                        <h3 style={{color: '#92400e', marginBottom: '10px'}}>このタブの使い方</h3>
                         <ul style={{color: '#78350f', fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px'}}>
                             <li>症例検討・フィードバック前に、現在の考えを整理するために使用します</li>
                             <li>「仮説」→「治療」→「理由」の流れで、自分の臨床推論を言語化してみましょう</li>
@@ -2211,7 +2201,7 @@
                     </div>
 
                     <div className="section" style={{background: '#e8f5e9', borderLeftColor: '#4caf50'}}>
-                        <h2 className="section-title" style={{color: '#2e7d32'}}>💡 使い方ガイド（最終版）</h2>
+                        <h2 className="section-title" style={{color: '#2e7d32'}}>使い方ガイド（最終版）</h2>
                         <p style={{marginBottom: '10px', lineHeight: '1.6'}}>
                             この基本情報は<strong>すべてのタブで共有</strong>されます。
                         </p>
@@ -2223,9 +2213,9 @@
                         </ol>
                         <p style={{marginTop: '15px', padding: '10px', background: 'white', borderRadius: '8px', fontSize: '14px'}}>
                             <strong>機能：</strong><br/>
-                            ✅ 評価・症例分析・治療介入を一貫管理<br/>
-                            ✅ AIによるフローチャート自動生成<br/>
-                            ✅ タブ間の自動引き継ぎ機能
+                            ・評価・症例分析・治療介入を一貫管理<br/>
+                            ・AIによるフローチャート自動生成<br/>
+                            ・タブ間の自動引き継ぎ機能
                         </p>
                     </div>
                 </>
@@ -2249,7 +2239,7 @@
                     {patientData.evaluationSessions.length > 0 && (
                         <div className="session-history">
                             <h3 style={{marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}} onClick={() => setShowHistory(!showHistory)}>
-                                📊 評価履歴（{patientData.evaluationSessions.length}回）
+                                評価履歴（{patientData.evaluationSessions.length}回）
                                 <span style={{fontSize: '20px'}}>{showHistory ? '▼' : '▶'}</span>
                             </h3>
                             {showHistory && patientData.evaluationSessions.map((session, index) => (
@@ -2404,14 +2394,14 @@
 
                     <div className="button-group">
                         <button className="btn btn-info" onClick={exportEvaluationCSV} style={{background: '#3b82f6'}}>
-                            📥 評価データをCSV出力
+                            評価データをCSV出力
                         </button>
                         <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer', margin: 0}}>
-                            📂 評価CSVを読み込む
+                            評価CSVを読み込む
                             <input type="file" accept=".csv" onChange={importEvaluationCSV} style={{display: 'none'}} />
                         </label>
                         <button className="btn btn-warning" onClick={inheritToCase}>
-                            ➡️ 手動で症例分析タブに引き継ぐ
+                            症例分析タブに引き継ぐ
                         </button>
                     </div>
                 </>
@@ -2435,7 +2425,7 @@
                     {patientData.exerciseSessions.length > 0 && (
                         <div className="session-history">
                             <h3 style={{marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}} onClick={() => setShowHistory(!showHistory)}>
-                                📊 運動療法履歴（{patientData.exerciseSessions.length}回）
+                                運動療法履歴（{patientData.exerciseSessions.length}回）
                                 <span style={{fontSize: '20px'}}>{showHistory ? '▼' : '▶'}</span>
                             </h3>
                             {showHistory && patientData.exerciseSessions.map((session, index) => (
@@ -2522,9 +2512,9 @@
                     </div>
 
                     <div className="section">
-                        <h2 className="section-title">💪 運動療法</h2>
+                        <h2 className="section-title">運動療法</h2>
                         <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
-                            <strong>💡 臨床推論のポイント：</strong> この問題に対して運動療法が最適なのか？徒手療法や物理療法と比較して検討しましょう
+                            <strong>臨床推論のポイント：</strong> この問題に対して運動療法が最適なのか？徒手療法や物理療法と比較して検討しましょう
                         </div>
                         <div className="form-group">
                             <label className="form-label">具体的な運動療法の内容</label>
@@ -2539,9 +2529,9 @@
                     </div>
 
                     <div className="section">
-                        <h2 className="section-title">🤲 徒手療法（マニュアルセラピー）</h2>
+                        <h2 className="section-title">徒手療法（マニュアルセラピー）</h2>
                         <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
-                            <strong>💡 臨床推論のポイント：</strong> この問題に対して徒手療法が最適なのか？運動療法や物理療法と比較して検討しましょう
+                            <strong>臨床推論のポイント：</strong> この問題に対して徒手療法が最適なのか？運動療法や物理療法と比較して検討しましょう
                         </div>
                         <div className="form-group">
                             <label className="form-label">具体的な徒手療法の内容</label>
@@ -2556,9 +2546,9 @@
                     </div>
 
                     <div className="section">
-                        <h2 className="section-title">⚡ 物理療法</h2>
+                        <h2 className="section-title">物理療法</h2>
                         <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
-                            <strong>💡 臨床推論のポイント：</strong> この問題に対して物理療法が最適なのか？運動療法や徒手療法と比較して検討しましょう
+                            <strong>臨床推論のポイント：</strong> この問題に対して物理療法が最適なのか？運動療法や徒手療法と比較して検討しましょう
                         </div>
                         <div className="form-group">
                             <label className="form-label">具体的な物理療法の内容</label>
@@ -2700,10 +2690,10 @@
 
                     <div className="button-group">
                         <button className="btn btn-info" onClick={exportExerciseCSV} style={{background: '#3b82f6'}}>
-                            📥 治療介入データをCSV出力
+                            治療介入データをCSV出力
                         </button>
                         <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer'}}>
-                            📂 治療介入データをCSV読み込み
+                            治療介入データをCSV読み込み
                             <input type="file" accept=".csv" onChange={importExerciseCSV} style={{display: 'none'}} />
                         </label>
                     </div>
@@ -3515,7 +3505,7 @@
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    ➡️ 治療介入タブに引き継ぐ
+                                    治療介入タブに引き継ぐ
                                 </button>
                             </>
                         )}
@@ -3523,7 +3513,7 @@
 
                     <div className="achievement-section">
                         <div className="achievement-header">
-                            <div className="achievement-title">📊 臨床推論チェックリスト達成率</div>
+                            <div className="achievement-title">臨床推論チェックリスト達成率</div>
                             <div className="achievement-percentage">{achievement.percentage}%</div>
                         </div>
                         <div className="progress-bar-container">
@@ -3536,13 +3526,13 @@
                         </div>
                         <div className="achievement-details">
                             <div className="achievement-stat">
-                                <span>✅ Yes:</span> <strong>{achievement.yesCount}</strong>
+                                <span>Yes:</span> <strong>{achievement.yesCount}</strong>
                             </div>
                             <div className="achievement-stat">
-                                <span>❌ No:</span> <strong>{achievement.noCount}</strong>
+                                <span>No:</span> <strong>{achievement.noCount}</strong>
                             </div>
                             <div className="achievement-stat">
-                                <span>⚪ 未回答:</span> <strong>{achievement.unansweredCount}</strong>
+                                <span>未回答:</span> <strong>{achievement.unansweredCount}</strong>
                             </div>
                             <div className="achievement-stat">
                                 <span>全質問数:</span> <strong>{achievement.totalQuestions}</strong>
@@ -3552,17 +3542,17 @@
 
                     <div className="button-group">
                         <button className="btn btn-info" onClick={exportCaseAnalysisCSV} style={{background: '#3b82f6'}}>
-                            📥 症例分析をCSV出力
+                            症例分析をCSV出力
                         </button>
                         <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer'}}>
-                            📂 症例分析をCSV読み込み
+                            症例分析をCSV読み込み
                             <input type="file" accept=".csv" onChange={importCaseAnalysisCSV} style={{display: 'none'}} />
                         </label>
                         <button className="btn btn-info" onClick={exportFlowchartPNG} style={{background: '#06b6d4'}}>
-                            🖼️ フローチャートを画像出力
+                            フローチャートを画像出力
                         </button>
                         <button className="btn btn-warning" onClick={inheritToExercise}>
-                            ➡️ 手動で治療介入タブに引き継ぐ
+                            治療介入タブに引き継ぐ
                         </button>
                     </div>
                 </>
