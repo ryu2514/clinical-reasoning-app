@@ -2910,8 +2910,16 @@
                                 <h3>管理者ログイン</h3>
                                 <form onSubmit={handlePasswordSubmit} autoComplete="on">
                                     <input
+                                        type="text"
+                                        name="username"
+                                        autoComplete="username"
+                                        value="admin"
+                                        readOnly
+                                        style={{position: 'absolute', opacity: 0, pointerEvents: 'none'}}
+                                    />
+                                    <input
                                         type="password"
-                                        name="admin-password"
+                                        name="password"
                                         autoComplete="current-password"
                                         placeholder="パスワードを入力"
                                         value={adminPassword}
