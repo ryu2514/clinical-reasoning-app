@@ -1664,11 +1664,29 @@
             const [adminPassword, setAdminPassword] = useState('');
             const [passwordError, setPasswordError] = useState('');
 
-            const toggleAdminMode = () => {
+            const toggleAdminMode = async () => {
                 if (!isAdminMode) {
                     setShowPasswordModal(true);
-                    setAdminPassword('');
                     setPasswordError('');
+
+                    // 保存されたパスワードを読み込み
+                    if (navigator.credentials) {
+                        try {
+                            const cred = await navigator.credentials.get({
+                                password: true,
+                                mediation: 'optional'
+                            });
+                            if (cred && cred.password) {
+                                setAdminPassword(cred.password);
+                            } else {
+                                setAdminPassword('');
+                            }
+                        } catch (err) {
+                            setAdminPassword('');
+                        }
+                    } else {
+                        setAdminPassword('');
+                    }
                 } else {
                     setIsAdminMode(false);
                     setShowAddForm(false);
@@ -1676,9 +1694,21 @@
                 }
             };
 
-            const handlePasswordSubmit = (e) => {
+            const handlePasswordSubmit = async (e) => {
                 e.preventDefault();
                 if (adminPassword === 'think2026') {
+                    // Credential Management APIでパスワードを保存
+                    if (window.PasswordCredential) {
+                        try {
+                            const cred = new PasswordCredential({
+                                id: 'admin',
+                                password: adminPassword
+                            });
+                            await navigator.credentials.store(cred);
+                        } catch (err) {
+                            console.log('Credential storage not supported');
+                        }
+                    }
                     setIsAdminMode(true);
                     setShowPasswordModal(false);
                     setAdminPassword('');
