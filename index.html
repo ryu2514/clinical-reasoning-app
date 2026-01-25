@@ -589,6 +589,81 @@
             border: none;
         }
 
+        /* パスワードモーダル */
+        .password-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 320px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .password-modal h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .password-modal input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .password-modal input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .password-modal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .password-modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .password-modal .btn-login {
+            background: #3b82f6;
+            color: white;
+            border: none;
+        }
+
+        .password-modal .btn-cancel {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .password-error {
+            color: #dc2626;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
         .tabs {
             display: flex;
             padding: 12px 20px 0;
@@ -1584,19 +1659,39 @@
                 link: ''
             });
 
+            // パスワードモーダル
+            const [showPasswordModal, setShowPasswordModal] = useState(false);
+            const [adminPassword, setAdminPassword] = useState('');
+            const [passwordError, setPasswordError] = useState('');
+
             const toggleAdminMode = () => {
                 if (!isAdminMode) {
-                    const password = prompt('管理者パスワードを入力してください');
-                    if (password === 'think2026') {
-                        setIsAdminMode(true);
-                    } else if (password !== null) {
-                        alert('パスワードが違います');
-                    }
+                    setShowPasswordModal(true);
+                    setAdminPassword('');
+                    setPasswordError('');
                 } else {
                     setIsAdminMode(false);
                     setShowAddForm(false);
                     setEditingNotification(null);
                 }
+            };
+
+            const handlePasswordSubmit = (e) => {
+                e.preventDefault();
+                if (adminPassword === 'think2026') {
+                    setIsAdminMode(true);
+                    setShowPasswordModal(false);
+                    setAdminPassword('');
+                    setPasswordError('');
+                } else {
+                    setPasswordError('パスワードが違います');
+                }
+            };
+
+            const closePasswordModal = () => {
+                setShowPasswordModal(false);
+                setAdminPassword('');
+                setPasswordError('');
             };
 
             const handleAddNotification = async () => {
@@ -2805,6 +2900,31 @@
                             </div>
                             <div className="notification-banner-title">{activeNotifications[0].title}</div>
                             <div className="notification-banner-hint">タップして詳細を見る</div>
+                        </div>
+                    )}
+
+                    {/* パスワードモーダル */}
+                    {showPasswordModal && (
+                        <div className="password-modal-overlay" onClick={closePasswordModal}>
+                            <div className="password-modal" onClick={(e) => e.stopPropagation()}>
+                                <h3>管理者ログイン</h3>
+                                <form onSubmit={handlePasswordSubmit} autoComplete="on">
+                                    <input
+                                        type="password"
+                                        name="admin-password"
+                                        autoComplete="current-password"
+                                        placeholder="パスワードを入力"
+                                        value={adminPassword}
+                                        onChange={(e) => setAdminPassword(e.target.value)}
+                                        autoFocus
+                                    />
+                                    {passwordError && <div className="password-error">{passwordError}</div>}
+                                    <div className="password-modal-actions">
+                                        <button type="submit" className="btn-login">ログイン</button>
+                                        <button type="button" className="btn-cancel" onClick={closePasswordModal}>キャンセル</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     )}
 
