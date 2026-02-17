@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>臨床推論サポート</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -34,15 +40,18 @@
             z-index: 9999;
             transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
         }
+
         .splash-screen.hidden {
             opacity: 0;
             visibility: hidden;
         }
+
         .splash-logo {
             width: 200px;
             height: auto;
             animation: fadeInUp 0.8s ease-out;
         }
+
         .splash-text {
             margin-top: 20px;
             font-family: 'Noto Sans JP', sans-serif;
@@ -51,6 +60,7 @@
             opacity: 0;
             animation: fadeIn 0.5s ease-out 0.5s forwards;
         }
+
         .splash-loader {
             margin-top: 30px;
             width: 50px;
@@ -60,23 +70,37 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         body {
@@ -91,15 +115,15 @@
             margin: 0 auto;
             background: #fff;
             border-radius: 16px;
-            border: 1px solid rgba(59,130,246,0.15);
+            border: 1px solid rgba(59, 130, 246, 0.15);
             overflow: hidden;
-            box-shadow: 0 4px 24px rgba(59,130,246,0.08);
+            box-shadow: 0 4px 24px rgba(59, 130, 246, 0.08);
         }
 
         .header {
             padding: 22px 28px;
             background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
-            border-bottom: 1px solid rgba(59,130,246,0.1);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -169,7 +193,7 @@
             max-width: 480px;
             height: 100%;
             background: white;
-            box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
             z-index: 1001;
             transform: translateX(100%);
             transition: transform 0.3s ease;
@@ -187,7 +211,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
@@ -381,7 +405,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 1001;
             opacity: 0;
             visibility: hidden;
@@ -400,7 +424,7 @@
             transform: translate(-50%, -50%) scale(0.9);
             background: white;
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
             padding: 24px;
             z-index: 1002;
             max-width: 420px;
@@ -596,7 +620,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 2000;
             display: flex;
             align-items: center;
@@ -608,7 +632,7 @@
             border-radius: 12px;
             padding: 24px;
             width: 320px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
         .password-modal h3 {
@@ -664,6 +688,349 @@
             margin-bottom: 12px;
         }
 
+        /* ログイン画面 */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f0f4f8 100%);
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.12);
+            text-align: center;
+        }
+
+        .login-container img {
+            width: 120px;
+            margin-bottom: 8px;
+        }
+
+        .login-container h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .login-container .login-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 28px;
+        }
+
+        .login-google-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .login-google-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+        }
+
+        .login-google-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .login-form-group {
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .login-form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .login-form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .login-form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .login-submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .login-submit-btn:hover {
+            background: #2563eb;
+        }
+
+        .login-submit-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .login-toggle {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .login-toggle a {
+            color: #3b82f6;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-error {
+            background: #fef2f2;
+            color: #dc2626;
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .user-info .user-email {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-logout {
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #e2e8f0;
+        }
+
+        /* 管理者ダッシュボード */
+        .admin-dashboard {
+            padding: 0;
+        }
+
+        .admin-dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .admin-dashboard-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .admin-stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .admin-stat-card {
+            background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+            border: 1px solid rgba(59, 130, 246, 0.12);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .admin-stat-card .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .admin-stat-card .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .admin-user-list {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .admin-user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .admin-user-item:last-child {
+            border-bottom: none;
+        }
+
+        .admin-user-item:hover {
+            background: #f8fafc;
+        }
+
+        .admin-user-item .user-detail {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .admin-user-item .user-detail .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .admin-user-item .user-detail .user-meta {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .admin-user-item .user-badge {
+            background: #eff6ff;
+            color: #3b82f6;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .admin-patient-detail {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .admin-patient-detail h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .admin-back-btn {
+            padding: 6px 14px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .admin-back-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .admin-patient-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .admin-patient-table th {
+            text-align: left;
+            padding: 8px 12px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .admin-patient-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+
+        .admin-badge-admin {
+            background: #fef3c7;
+            color: #d97706;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+
         .tabs {
             display: flex;
             padding: 12px 20px 0;
@@ -692,7 +1059,7 @@
         .tab.active {
             color: #3b82f6;
             background: #fff;
-            box-shadow: 0 -2px 10px rgba(59,130,246,0.08);
+            box-shadow: 0 -2px 10px rgba(59, 130, 246, 0.08);
         }
 
         .content {
@@ -703,7 +1070,7 @@
 
         .section {
             background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
-            border: 1px solid rgba(59,130,246,0.12);
+            border: 1px solid rgba(59, 130, 246, 0.12);
             border-radius: 12px;
             padding: 22px;
             margin-bottom: 18px;
@@ -739,7 +1106,9 @@
             font-size: 13px;
         }
 
-        .form-input, .form-textarea, .form-select {
+        .form-input,
+        .form-textarea,
+        .form-select {
             width: 100%;
             padding: 12px 14px;
             border: 1.5px solid #e2e8f0;
@@ -752,15 +1121,18 @@
             -webkit-text-fill-color: #1e293b;
         }
 
-        .form-input::placeholder, .form-textarea::placeholder {
+        .form-input::placeholder,
+        .form-textarea::placeholder {
             color: #94a3b8;
             opacity: 1;
         }
 
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
             outline: none;
             border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
         .form-textarea {
@@ -798,7 +1170,7 @@
             padding: 16px;
             border-radius: 10px;
             margin-bottom: 12px;
-            border: 1px solid rgba(59,130,246,0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
         }
 
         .button-group {
@@ -827,12 +1199,12 @@
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
         }
 
         .btn-secondary {
@@ -851,29 +1223,29 @@
         .btn-success {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .btn-success:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(16,185,129,0.35);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
         }
 
         .btn-warning {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
-            box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         }
 
         .btn-warning:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(245,158,11,0.35);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
         }
 
         .btn-info {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         .btn-small {
@@ -889,7 +1261,7 @@
             color: white;
             padding: 14px 22px;
             border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
             animation: slideIn 0.3s ease-out;
             z-index: 1000;
             font-size: 14px;
@@ -900,6 +1272,7 @@
                 transform: translateX(400px);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -909,7 +1282,7 @@
         .subsection {
             margin-top: 16px;
             padding-top: 16px;
-            border-top: 1px solid rgba(59,130,246,0.1);
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
         }
 
         .subsection-title {
@@ -924,7 +1297,7 @@
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            border: 1px solid rgba(59,130,246,0.15);
+            border: 1px solid rgba(59, 130, 246, 0.15);
         }
 
         .common-info-section {
@@ -932,7 +1305,7 @@
             padding: 18px;
             border-radius: 12px;
             margin-bottom: 20px;
-            border: 1px solid rgba(245,158,11,0.2);
+            border: 1px solid rgba(245, 158, 11, 0.2);
         }
 
         .id-row {
@@ -1000,7 +1373,7 @@
 
         .session-item:hover {
             border-left-color: #3b82f6;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.1);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
         }
 
         .session-item.active {
@@ -1035,7 +1408,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(15,23,42,0.6);
+            background: rgba(15, 23, 42, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1050,7 +1423,7 @@
             padding: 28px;
             max-width: 500px;
             width: 100%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
         .modal-header {
@@ -1083,7 +1456,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(15,23,42,0.6);
+            background: rgba(15, 23, 42, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1100,7 +1473,7 @@
             width: 100%;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
         .search-header {
@@ -1155,7 +1528,7 @@
         .search-input:focus {
             outline: none;
             border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
         .btn-search {
@@ -1167,12 +1540,12 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         .btn-search:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
         }
 
         .case-list {
@@ -1292,7 +1665,9 @@
                 margin-bottom: 10px;
             }
 
-            .form-input, .form-textarea, .form-select {
+            .form-input,
+            .form-textarea,
+            .form-select {
                 padding: 14px 12px;
                 font-size: 16px;
                 border-radius: 10px;
@@ -1400,8 +1775,8 @@
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 25px;
-            border: 1px solid rgba(59,130,246,0.15);
-            box-shadow: 0 4px 16px rgba(59,130,246,0.08);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08);
         }
 
         .achievement-header {
@@ -1429,7 +1804,7 @@
             background: #e2e8f0;
             border-radius: 13px;
             overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
         }
 
         .progress-bar-fill {
@@ -1475,11 +1850,17 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <!-- スプラッシュスクリーン -->
     <div class="splash-screen" id="splash">
@@ -1545,7 +1926,7 @@
                 cr3_q4: '', cr3_q4_reason: '', cr3_q5: '', cr3_q5_reason: '', cr3_q6: '', cr3_q6_reason: '',
                 cr3_q7: '', cr3_q7_reason: '', cr3_reflection: '',
                 triangleData: '', triangleWarrant: '', triangleClaim: '',
-                flowchartHypotheses: [{id: 1, hypothesis: '', findings: ''}],
+                flowchartHypotheses: [{ id: 1, hypothesis: '', findings: '' }],
                 flowchartData: null,
                 isGeneratingFlowchart: false,
                 flowchartError: null,
@@ -1580,12 +1961,225 @@
             };
         };
 
-        // Supabase クライアント初期化
-        const SUPABASE_URL = 'https://nxliafdyfvocehhrvsex.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54bGlhZmR5ZnZvY2VoaHJ2c2V4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNDQxMzMsImV4cCI6MjA4NDgyMDEzM30._JP6NvhgOfIj39hW5f3ZWYuJ6d_UtcWpzUGS0mCjmnU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Firebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXG2E8hO9Gy3DMX5mBk7yYsJRA17anzy8",
+            authDomain: "clinical-reasoning-89d2c.firebaseapp.com",
+            projectId: "clinical-reasoning-89d2c",
+            storageBucket: "clinical-reasoning-89d2c.firebasestorage.app",
+            messagingSenderId: "764912230405",
+            appId: "1:764912230405:web:3b5a842b0646d2cbc2bc6c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+        // 管理者メールアドレス
+        const ADMIN_EMAIL = 'ryujukobayashi@gmail.com';
+
+        // Firestore ヘルパー関数
+        const firestoreSavePatients = async (uid, patients, email) => {
+            try {
+                await db.collection('users').doc(uid).set({ patients, email }, { merge: true });
+            } catch (error) {
+                console.error('Firestore保存エラー:', error);
+            }
+        };
+
+        const firestoreLoadPatients = async (uid) => {
+            try {
+                const doc = await db.collection('users').doc(uid).get();
+                if (doc.exists && doc.data().patients) {
+                    return doc.data().patients;
+                }
+                return [];
+            } catch (error) {
+                console.error('Firestore読込エラー:', error);
+                return [];
+            }
+        };
+
+        const firestoreSaveTempData = async (uid, tempData, email) => {
+            try {
+                await db.collection('users').doc(uid).set({ tempData, email }, { merge: true });
+            } catch (error) {
+                console.error('Firestore一時保存エラー:', error);
+            }
+        };
+
+        const firestoreLoadTempData = async (uid) => {
+            try {
+                const doc = await db.collection('users').doc(uid).get();
+                if (doc.exists && doc.data().tempData) {
+                    return doc.data().tempData;
+                }
+                return null;
+            } catch (error) {
+                console.error('Firestore一時データ読込エラー:', error);
+                return null;
+            }
+        };
+
+        // 管理者用：全ユーザーデータ取得
+        const firestoreLoadAllUsers = async () => {
+            try {
+                const snapshot = await db.collection('users').get();
+                return snapshot.docs.map(doc => ({
+                    uid: doc.id,
+                    ...doc.data()
+                }));
+            } catch (error) {
+                console.error('全ユーザー取得エラー:', error);
+                return [];
+            }
+        };
+
+        // JSONBin.io設定（お知らせ管理用）
+        const JSONBIN_API_KEY = '$2a$10$Nggh5pLScwao/i8kzbFfq.UILP.wDXA6NpdnvRL4lg2fbqLRxwhrG';
+        const JSONBIN_NOTIFICATIONS_ID = '697ef84443b1c97be95cbd1c';
+        const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_NOTIFICATIONS_ID}`;
+
+        // JSONBinからデータを取得
+        const fetchJsonBinData = async () => {
+            try {
+                const response = await fetch(`${JSONBIN_URL}/latest`, {
+                    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+                });
+                const data = await response.json();
+                return data.record || { notifications: [] };
+            } catch (error) {
+                console.error('データ取得エラー:', error);
+                return { notifications: [] };
+            }
+        };
+
+        // JSONBinにデータを保存
+        const saveJsonBinData = async (data) => {
+            try {
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('データ保存エラー:', error);
+            }
+        };
 
         function App() {
+            // Firebase Auth 状態
+            const [currentUser, setCurrentUser] = useState(null);
+            const [authLoading, setAuthLoading] = useState(true);
+            const [loginMode, setLoginMode] = useState('login'); // 'login' or 'register'
+            const [loginEmail, setLoginEmail] = useState('');
+            const [loginPassword, setLoginPassword] = useState('');
+            const [loginError, setLoginError] = useState('');
+            const [loginSubmitting, setLoginSubmitting] = useState(false);
+
+            // Auth状態の監視
+            useEffect(() => {
+                const unsubscribe = auth.onAuthStateChanged((user) => {
+                    setCurrentUser(user);
+                    setAuthLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            // Googleログイン
+            const handleGoogleLogin = async () => {
+                try {
+                    setLoginError('');
+                    await auth.signInWithPopup(googleProvider);
+                } catch (error) {
+                    setLoginError('Googleログインに失敗しました: ' + error.message);
+                }
+            };
+
+            // メール/パスワードログイン・登録
+            const handleEmailAuth = async (e) => {
+                e.preventDefault();
+                setLoginError('');
+                setLoginSubmitting(true);
+                try {
+                    if (loginMode === 'register') {
+                        await auth.createUserWithEmailAndPassword(loginEmail, loginPassword);
+                    } else {
+                        await auth.signInWithEmailAndPassword(loginEmail, loginPassword);
+                    }
+                } catch (error) {
+                    const messages = {
+                        'auth/email-already-in-use': 'このメールアドレスは既に登録されています',
+                        'auth/invalid-email': 'メールアドレスの形式が正しくありません',
+                        'auth/weak-password': 'パスワードは6文字以上にしてください',
+                        'auth/user-not-found': 'アカウントが見つかりません',
+                        'auth/wrong-password': 'パスワードが間違っています',
+                        'auth/invalid-credential': 'メールアドレスまたはパスワードが間違っています'
+                    };
+                    setLoginError(messages[error.code] || error.message);
+                } finally {
+                    setLoginSubmitting(false);
+                }
+            };
+
+            // ログアウト
+            const handleLogout = async () => {
+                if (confirm('ログアウトしますか？')) {
+                    await auth.signOut();
+                }
+            };
+
+            // ログイン画面
+            if (authLoading) {
+                return null; // スプラッシュスクリーンが表示中
+            }
+
+            if (!currentUser) {
+                return (
+                    <div className="login-screen">
+                        <div className="login-container">
+                            <img src="logo-transparent.png" alt="logo" />
+                            <h2>臨床推論サポート</h2>
+                            <div className="login-subtitle">ログインしてデータを同期</div>
+
+                            {loginError && <div className="login-error">{loginError}</div>}
+
+                            <button className="login-google-btn" onClick={handleGoogleLogin}>
+                                <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>
+                                Googleでログイン
+                            </button>
+
+                            <div className="login-divider">または</div>
+
+                            <form onSubmit={handleEmailAuth}>
+                                <div className="login-form-group">
+                                    <label>メールアドレス</label>
+                                    <input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="example@email.com" required />
+                                </div>
+                                <div className="login-form-group">
+                                    <label>パスワード</label>
+                                    <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="6文字以上" required minLength="6" />
+                                </div>
+                                <button type="submit" className="login-submit-btn" disabled={loginSubmitting}>
+                                    {loginSubmitting ? '処理中...' : loginMode === 'register' ? '新規登録' : 'ログイン'}
+                                </button>
+                            </form>
+
+                            <div className="login-toggle">
+                                {loginMode === 'login' ? (
+                                    <span>アカウントがない方は <a onClick={() => { setLoginMode('register'); setLoginError(''); }}>新規登録</a></span>
+                                ) : (
+                                    <span>アカウントをお持ちの方は <a onClick={() => { setLoginMode('login'); setLoginError(''); }}>ログイン</a></span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
             const [activeTab, setActiveTab] = useState('basic');
             const [showToast, setShowToast] = useState(false);
             const [toastMessage, setToastMessage] = useState('');
@@ -1597,6 +2191,7 @@
             const previousTabRef = useRef('basic');
             const [autoSaveStatus, setAutoSaveStatus] = useState('');
             const autoSaveTimerRef = useRef(null);
+            const [firestoreLoaded, setFirestoreLoaded] = useState(false);
 
             // お知らせ関連の状態
             const [showNotificationPanel, setShowNotificationPanel] = useState(false);
@@ -1607,19 +2202,14 @@
                 return saved ? JSON.parse(saved) : [];
             });
 
-            // Supabaseからお知らせを取得
+            // JSONBinからお知らせを取得
             useEffect(() => {
                 const fetchNotifications = async () => {
-                    const { data, error } = await supabase
-                        .from('notifications')
-                        .select('*')
-                        .order('created_at', { ascending: false });
-
-                    if (error) {
-                        console.error('お知らせの取得に失敗:', error);
-                    } else {
-                        setNotificationsData(data || []);
-                    }
+                    const data = await fetchJsonBinData();
+                    const sorted = (data.notifications || []).sort((a, b) =>
+                        new Date(b.created_at) - new Date(a.created_at)
+                    );
+                    setNotificationsData(sorted);
                 };
                 fetchNotifications();
             }, []);
@@ -1637,7 +2227,7 @@
             const bannerShownRef = useRef(false);
 
             useEffect(() => {
-                // Supabaseからデータ取得後、スプラッシュスクリーン後にお知らせバナーを表示
+                // JSONBinからデータ取得後、スプラッシュスクリーン後にお知らせバナーを表示
                 if (activeNotifications.length > 0 && !bannerShownRef.current) {
                     const timer = setTimeout(() => {
                         setShowNotificationBanner(true);
@@ -1648,6 +2238,7 @@
             }, [activeNotifications]);
 
             // 管理者モード
+            const isAdmin = currentUser.email === ADMIN_EMAIL;
             const [isAdminMode, setIsAdminMode] = useState(false);
             const [showAddForm, setShowAddForm] = useState(false);
             const [editingNotification, setEditingNotification] = useState(null);
@@ -1659,34 +2250,15 @@
                 link: ''
             });
 
-            // パスワードモーダル
-            const [showPasswordModal, setShowPasswordModal] = useState(false);
-            const [adminPassword, setAdminPassword] = useState('');
-            const [passwordError, setPasswordError] = useState('');
+            // 管理者ダッシュボード
+            const [allUsersData, setAllUsersData] = useState([]);
+            const [adminLoading, setAdminLoading] = useState(false);
+            const [selectedUser, setSelectedUser] = useState(null);
 
-            const toggleAdminMode = async () => {
+            const toggleAdminMode = () => {
+                if (!isAdmin) return;
                 if (!isAdminMode) {
-                    setShowPasswordModal(true);
-                    setPasswordError('');
-
-                    // 保存されたパスワードを読み込み
-                    if (navigator.credentials) {
-                        try {
-                            const cred = await navigator.credentials.get({
-                                password: true,
-                                mediation: 'optional'
-                            });
-                            if (cred && cred.password) {
-                                setAdminPassword(cred.password);
-                            } else {
-                                setAdminPassword('');
-                            }
-                        } catch (err) {
-                            setAdminPassword('');
-                        }
-                    } else {
-                        setAdminPassword('');
-                    }
+                    setIsAdminMode(true);
                 } else {
                     setIsAdminMode(false);
                     setShowAddForm(false);
@@ -1694,34 +2266,12 @@
                 }
             };
 
-            const handlePasswordSubmit = async (e) => {
-                e.preventDefault();
-                if (adminPassword === 'think2026') {
-                    // Credential Management APIでパスワードを保存
-                    if (window.PasswordCredential) {
-                        try {
-                            const cred = new PasswordCredential({
-                                id: 'admin',
-                                password: adminPassword
-                            });
-                            await navigator.credentials.store(cred);
-                        } catch (err) {
-                            console.log('Credential storage not supported');
-                        }
-                    }
-                    setIsAdminMode(true);
-                    setShowPasswordModal(false);
-                    setAdminPassword('');
-                    setPasswordError('');
-                } else {
-                    setPasswordError('パスワードが違います');
-                }
-            };
-
-            const closePasswordModal = () => {
-                setShowPasswordModal(false);
-                setAdminPassword('');
-                setPasswordError('');
+            // 管理者ダッシュボード：全ユーザーデータ読み込み
+            const loadAllUsers = async () => {
+                setAdminLoading(true);
+                const users = await firestoreLoadAllUsers();
+                setAllUsersData(users);
+                setAdminLoading(false);
             };
 
             const handleAddNotification = async () => {
@@ -1730,21 +2280,21 @@
                     return;
                 }
 
-                const { data, error } = await supabase
-                    .from('notifications')
-                    .insert([{
+                try {
+                    const newItem = {
+                        id: Date.now(),
                         tag: newNotification.tag,
                         date: newNotification.date,
                         title: newNotification.title,
                         description: newNotification.description,
-                        link: newNotification.link || null
-                    }])
-                    .select();
+                        link: newNotification.link || null,
+                        created_at: new Date().toISOString()
+                    };
 
-                if (error) {
-                    alert('追加に失敗しました: ' + error.message);
-                } else {
-                    setNotificationsData([data[0], ...notificationsData]);
+                    const updatedNotifications = [newItem, ...notificationsData];
+                    await saveJsonBinData({ notifications: updatedNotifications });
+
+                    setNotificationsData(updatedNotifications);
                     setNewNotification({
                         tag: 'お知らせ',
                         date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -1753,6 +2303,8 @@
                         link: ''
                     });
                     setShowAddForm(false);
+                } catch (error) {
+                    alert('追加に失敗しました: ' + error.message);
                 }
             };
 
@@ -1762,39 +2314,29 @@
                     return;
                 }
 
-                const { error } = await supabase
-                    .from('notifications')
-                    .update({
-                        tag: editingNotification.tag,
-                        date: editingNotification.date,
-                        title: editingNotification.title,
-                        description: editingNotification.description,
-                        link: editingNotification.link || null
-                    })
-                    .eq('id', editingNotification.id);
-
-                if (error) {
-                    alert('更新に失敗しました: ' + error.message);
-                } else {
-                    setNotificationsData(notificationsData.map(n =>
+                try {
+                    const updatedNotifications = notificationsData.map(n =>
                         n.id === editingNotification.id ? editingNotification : n
-                    ));
+                    );
+                    await saveJsonBinData({ notifications: updatedNotifications });
+
+                    setNotificationsData(updatedNotifications);
                     setEditingNotification(null);
+                } catch (error) {
+                    alert('更新に失敗しました: ' + error.message);
                 }
             };
 
             const handleDeleteNotification = async (id) => {
                 if (!confirm('このお知らせを削除しますか？')) return;
 
-                const { error } = await supabase
-                    .from('notifications')
-                    .delete()
-                    .eq('id', id);
+                try {
+                    const updatedNotifications = notificationsData.filter(n => n.id !== id);
+                    await saveJsonBinData({ notifications: updatedNotifications });
 
-                if (error) {
+                    setNotificationsData(updatedNotifications);
+                } catch (error) {
                     alert('削除に失敗しました: ' + error.message);
-                } else {
-                    setNotificationsData(notificationsData.filter(n => n.id !== id));
                 }
             };
 
@@ -1812,32 +2354,37 @@
             const [patientData, setPatientData] = useState(getInitialPatientData());
 
             useEffect(() => {
-                const saved = localStorage.getItem('savedPatients_v3');
-                if (saved) {
-                    setSavedPatients(JSON.parse(saved));
-                }
-
-                // 一時保存データの復元
-                const tempData = localStorage.getItem('tempPatientData');
-                if (tempData) {
-                    try {
-                        const parsedData = JSON.parse(tempData);
-                        setPatientData(mergeWithInitialData(parsedData));
-                        setAutoSaveStatus('前回の入力を復元しました');
-                        setTimeout(() => setAutoSaveStatus(''), 3000);
-                    } catch (error) {
-                        console.error('一時保存データの復元に失敗:', error);
+                if (!currentUser || firestoreLoaded) return;
+                // Firestoreからデータを読み込み
+                const loadData = async () => {
+                    const patients = await firestoreLoadPatients(currentUser.uid);
+                    if (patients.length > 0) {
+                        setSavedPatients(patients);
                     }
-                } else {
-                    const today = new Date().toISOString().split('T')[0];
-                    setPatientData(prev => ({
-                        ...prev,
-                        createdDate: today,
-                        currentEvaluation: { ...prev.currentEvaluation, sessionDate: today },
-                        currentExercise: { ...prev.currentExercise, sessionDate: today }
-                    }));
-                }
-            }, []);
+
+                    // 一時保存データの復元
+                    const tempData = await firestoreLoadTempData(currentUser.uid);
+                    if (tempData) {
+                        try {
+                            setPatientData(mergeWithInitialData(tempData));
+                            setAutoSaveStatus('前回の入力を復元しました');
+                            setTimeout(() => setAutoSaveStatus(''), 3000);
+                        } catch (error) {
+                            console.error('一時保存データの復元に失敗:', error);
+                        }
+                    } else {
+                        const today = new Date().toISOString().split('T')[0];
+                        setPatientData(prev => ({
+                            ...prev,
+                            createdDate: today,
+                            currentEvaluation: { ...prev.currentEvaluation, sessionDate: today },
+                            currentExercise: { ...prev.currentExercise, sessionDate: today }
+                        }));
+                    }
+                    setFirestoreLoaded(true);
+                };
+                loadData();
+            }, [currentUser, firestoreLoaded]);
 
             // タブ切り替え時の自動引き継ぎ確認
             useEffect(() => {
@@ -1849,8 +2396,8 @@
                 // 評価→症例分析への切り替え
                 if (prevTab === 'eval' && currentTab === 'case') {
                     const hasEvalData = patientData.currentEvaluation.romRestriction ||
-                                       patientData.currentEvaluation.muscleWeakness ||
-                                       patientData.currentEvaluation.balance;
+                        patientData.currentEvaluation.muscleWeakness ||
+                        patientData.currentEvaluation.balance;
                     if (hasEvalData) {
                         setInheritAction(() => inheritEvaluationToCase);
                         setShowInheritModal(true);
@@ -1860,7 +2407,7 @@
                 // 症例分析→運動療法への切り替え
                 if (prevTab === 'case' && currentTab === 'exercise') {
                     const hasCaseData = patientData.caseAnalysis.triangleData ||
-                                       patientData.caseAnalysis.triangleClaim;
+                        patientData.caseAnalysis.triangleClaim;
                     if (hasCaseData) {
                         setInheritAction(() => inheritCaseToExercise);
                         setShowInheritModal(true);
@@ -1885,7 +2432,7 @@
                 // 3秒後に自動保存
                 autoSaveTimerRef.current = setTimeout(() => {
                     try {
-                        localStorage.setItem('tempPatientData', JSON.stringify(patientData));
+                        if (currentUser) firestoreSaveTempData(currentUser.uid, patientData, currentUser.email);
                         const now = new Date();
                         const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
                         setAutoSaveStatus(`${timeStr} 自動保存済み`);
@@ -1951,7 +2498,7 @@
                         ...prev,
                         caseAnalysis: {
                             ...prev.caseAnalysis,
-                            flowchartHypotheses: [...prev.caseAnalysis.flowchartHypotheses, {id: newId, hypothesis: '', findings: ''}]
+                            flowchartHypotheses: [...prev.caseAnalysis.flowchartHypotheses, { id: newId, hypothesis: '', findings: '' }]
                         }
                     };
                 });
@@ -1973,7 +2520,7 @@
                     caseAnalysis: {
                         ...prev.caseAnalysis,
                         flowchartHypotheses: prev.caseAnalysis.flowchartHypotheses.map(h =>
-                            h.id === id ? {...h, [field]: value} : h
+                            h.id === id ? { ...h, [field]: value } : h
                         )
                     }
                 }));
@@ -1996,7 +2543,7 @@
                 try {
                     const response = await fetch('/api/generate-flowchart', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ hypotheses: validHypotheses })
                     });
 
@@ -2030,7 +2577,7 @@
                                 id: newId,
                                 problemNode: '',
                                 treatmentGoal: '',
-                                options: [{id: 1, name: '', rationale: '', priority: ''}]
+                                options: [{ id: 1, name: '', rationale: '', priority: '' }]
                             }]
                         }
                     };
@@ -2053,7 +2600,7 @@
                     caseAnalysis: {
                         ...prev.caseAnalysis,
                         treatmentPlans: prev.caseAnalysis.treatmentPlans.map(p =>
-                            p.id === planId ? {...p, [field]: value} : p
+                            p.id === planId ? { ...p, [field]: value } : p
                         )
                     }
                 }));
@@ -2069,7 +2616,7 @@
                                 const newOptionId = Math.max(...p.options.map(o => o.id), 0) + 1;
                                 return {
                                     ...p,
-                                    options: [...p.options, {id: newOptionId, name: '', rationale: '', priority: ''}]
+                                    options: [...p.options, { id: newOptionId, name: '', rationale: '', priority: '' }]
                                 };
                             }
                             return p;
@@ -2106,7 +2653,7 @@
                                 return {
                                     ...p,
                                     options: p.options.map(o =>
-                                        o.id === optionId ? {...o, [field]: value} : o
+                                        o.id === optionId ? { ...o, [field]: value } : o
                                     )
                                 };
                             }
@@ -2243,7 +2790,7 @@
                             const [key, ...valueParts] = line.split(',');
                             const value = valueParts.join(',').trim();
 
-                            switch(key.trim()) {
+                            switch (key.trim()) {
                                 case 'セッション日付': newEvaluation.sessionDate = value; break;
                                 case '困難な動作': newEvaluation.difficultMovement = value; break;
                                 case '代償パターン': newEvaluation.compensatoryPattern = value; break;
@@ -2670,7 +3217,7 @@
                 }
 
                 setSavedPatients(patients);
-                localStorage.setItem('savedPatients_v3', JSON.stringify(patients));
+                if (currentUser) firestoreSavePatients(currentUser.uid, patients, currentUser.email);
 
                 const dataStr = JSON.stringify(patientData, null, 2);
                 const blob = new Blob([dataStr], { type: 'application/json' });
@@ -2692,8 +3239,8 @@
 
                 const headers = ['患者ID', '作成日', '患者名', '年齢', '性別', '診断名', '主訴', '評価セッション数', '運動療法セッション数'];
                 const rows = savedPatients.map(p => [
-                    p.patientId||'', p.createdDate||'', p.basicInfo.name||'', p.basicInfo.age||'',
-                    p.basicInfo.gender||'', p.basicInfo.diagnosis||'', p.basicInfo.chiefComplaint||'',
+                    p.patientId || '', p.createdDate || '', p.basicInfo.name || '', p.basicInfo.age || '',
+                    p.basicInfo.gender || '', p.basicInfo.diagnosis || '', p.basicInfo.chiefComplaint || '',
                     p.evaluationSessions?.length || 0, p.exerciseSessions?.length || 0
                 ].map(f => `"${String(f).replace(/"/g, '""')}"`));
 
@@ -2736,7 +3283,7 @@
                 if (!confirm(`患者ID: ${id} を削除しますか？`)) return;
                 const updated = savedPatients.filter(p => p.patientId !== id);
                 setSavedPatients(updated);
-                localStorage.setItem('savedPatients_v3', JSON.stringify(updated));
+                if (currentUser) firestoreSavePatients(currentUser.uid, updated, currentUser.email);
                 showMessage('削除しました');
             };
 
@@ -2760,12 +3307,16 @@
                         <div className="header-left">
                             <h1>臨床推論統合アプリ</h1>
                             {autoSaveStatus && (
-                                <p style={{fontSize: '14px', color: '#10b981', marginTop: '5px'}}>
+                                <p style={{ fontSize: '14px', color: '#10b981', marginTop: '5px' }}>
                                     ✓ {autoSaveStatus}
                                 </p>
                             )}
                         </div>
                         <div className="header-right">
+                            <div className="user-info">
+                                <span className="user-email">{currentUser.email || currentUser.displayName}</span>
+                                <button className="btn-logout" onClick={handleLogout}>ログアウト</button>
+                            </div>
                             <button className="notification-btn" onClick={() => setShowNotificationPanel(true)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -2783,9 +3334,84 @@
                         <button className={`tab ${activeTab === 'eval' ? 'active' : ''}`} onClick={() => setActiveTab('eval')}>評価</button>
                         <button className={`tab ${activeTab === 'case' ? 'active' : ''}`} onClick={() => setActiveTab('case')}>症例分析</button>
                         <button className={`tab ${activeTab === 'exercise' ? 'active' : ''}`} onClick={() => setActiveTab('exercise')}>治療介入</button>
+                        {isAdmin && <button className={`tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => { setActiveTab('admin'); loadAllUsers(); }} style={activeTab === 'admin' ? { background: '#fef3c7', color: '#d97706' } : { color: '#d97706' }}>👑 管理者</button>}
                     </div>
 
                     <div className="content">
+                        {activeTab === 'admin' && isAdmin && (
+                            <div className="admin-dashboard">
+                                <div className="admin-dashboard-header">
+                                    <h2>👑 管理者ダッシュボード</h2>
+                                    {selectedUser && <button className="admin-back-btn" onClick={() => setSelectedUser(null)}>← ユーザー一覧に戻る</button>}
+                                </div>
+
+                                {adminLoading ? (
+                                    <p style={{ textAlign: 'center', color: '#94a3b8', padding: '40px' }}>読み込み中...</p>
+                                ) : selectedUser ? (
+                                    <div className="admin-patient-detail">
+                                        <h4>📋 {selectedUser.email || selectedUser.uid} の患者データ</h4>
+                                        {selectedUser.patients && selectedUser.patients.length > 0 ? (
+                                            <table className="admin-patient-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>患者ID</th>
+                                                        <th>氏名</th>
+                                                        <th>年齢</th>
+                                                        <th>診断名</th>
+                                                        <th>作成日</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {selectedUser.patients.map((p, i) => (
+                                                        <tr key={i}>
+                                                            <td>{p.patientId || '-'}</td>
+                                                            <td>{p.basicInfo?.name || '-'}</td>
+                                                            <td>{p.basicInfo?.age || '-'}</td>
+                                                            <td>{p.basicInfo?.diagnosis || '-'}</td>
+                                                            <td>{p.createdDate || '-'}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        ) : (
+                                            <p style={{ color: '#94a3b8', fontSize: '13px' }}>患者データなし</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="admin-stat-cards">
+                                            <div className="admin-stat-card">
+                                                <div className="stat-number">{allUsersData.length}</div>
+                                                <div className="stat-label">総ユーザー数</div>
+                                            </div>
+                                            <div className="admin-stat-card">
+                                                <div className="stat-number">{allUsersData.reduce((sum, u) => sum + (u.patients?.length || 0), 0)}</div>
+                                                <div className="stat-label">総患者データ数</div>
+                                            </div>
+                                        </div>
+                                        <div className="admin-user-list">
+                                            {allUsersData.length === 0 ? (
+                                                <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>まだユーザーがいません</div>
+                                            ) : (
+                                                allUsersData.map(user => (
+                                                    <div key={user.uid} className="admin-user-item" onClick={() => setSelectedUser(user)}>
+                                                        <div className="user-detail">
+                                                            <div className="user-name">
+                                                                {user.email || user.uid}
+                                                                {user.email === ADMIN_EMAIL && <span className="admin-badge-admin">管理者</span>}
+                                                            </div>
+                                                            <div className="user-meta">{user.patients?.length || 0}件の患者データ</div>
+                                                        </div>
+                                                        <span className="user-badge">{user.patients?.length || 0}件</span>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
                         {activeTab === 'basic' && (
                             <BasicInfoTab
                                 patientData={patientData}
@@ -2886,11 +3512,11 @@
                                     <button className="btn-search" onClick={handleSearch}>検索</button>
                                 </div>
                                 <div className="case-list">
-                                    <h3 style={{marginBottom: '15px', color: '#1e293b', fontSize: '15px', fontWeight: '600'}}>
+                                    <h3 style={{ marginBottom: '15px', color: '#1e293b', fontSize: '15px', fontWeight: '600' }}>
                                         保存済み患者（{savedPatients.length}名）
                                     </h3>
                                     {savedPatients.length === 0 ? (
-                                        <p style={{color: '#94a3b8', textAlign: 'center', padding: '20px'}}>保存されている患者がいません</p>
+                                        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '20px' }}>保存されている患者がいません</p>
                                     ) : (
                                         savedPatients.slice().reverse().map((patient, index) => (
                                             <div key={index} className="case-item">
@@ -2933,38 +3559,6 @@
                         </div>
                     )}
 
-                    {/* パスワードモーダル */}
-                    {showPasswordModal && (
-                        <div className="password-modal-overlay" onClick={closePasswordModal}>
-                            <div className="password-modal" onClick={(e) => e.stopPropagation()}>
-                                <h3>管理者ログイン</h3>
-                                <form onSubmit={handlePasswordSubmit} autoComplete="on">
-                                    <input
-                                        type="text"
-                                        name="username"
-                                        autoComplete="username"
-                                        value="admin"
-                                        readOnly
-                                        style={{position: 'absolute', opacity: 0, pointerEvents: 'none'}}
-                                    />
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        autoComplete="current-password"
-                                        placeholder="パスワードを入力"
-                                        value={adminPassword}
-                                        onChange={(e) => setAdminPassword(e.target.value)}
-                                        autoFocus
-                                    />
-                                    {passwordError && <div className="password-error">{passwordError}</div>}
-                                    <div className="password-modal-actions">
-                                        <button type="submit" className="btn-login">ログイン</button>
-                                        <button type="button" className="btn-cancel" onClick={closePasswordModal}>キャンセル</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
 
                     {/* お知らせパネル */}
                     <div className={`notification-overlay ${showNotificationPanel ? 'open' : ''}`} onClick={() => setShowNotificationPanel(false)} />
@@ -2975,9 +3569,11 @@
                         </div>
 
                         {/* 管理者トグル */}
-                        <button className="admin-toggle" onClick={toggleAdminMode}>
-                            {isAdminMode ? '管理者モードを終了' : '管理者モード'}
-                        </button>
+                        {isAdmin && (
+                            <button className="admin-toggle" onClick={toggleAdminMode}>
+                                {isAdminMode ? '管理者モードを終了' : '管理者モード'}
+                            </button>
+                        )}
 
                         {/* 新規追加フォーム */}
                         {isAdminMode && showAddForm && (
@@ -2985,26 +3581,26 @@
                                 <h3>新しいお知らせを追加</h3>
                                 <div className="admin-form-group">
                                     <label>タグ</label>
-                                    <select value={newNotification.tag} onChange={(e) => setNewNotification({...newNotification, tag: e.target.value})}>
+                                    <select value={newNotification.tag} onChange={(e) => setNewNotification({ ...newNotification, tag: e.target.value })}>
                                         <option value="お知らせ">お知らせ</option>
                                         <option value="動画">動画</option>
                                     </select>
                                 </div>
                                 <div className="admin-form-group">
                                     <label>日付</label>
-                                    <input type="text" value={newNotification.date} onChange={(e) => setNewNotification({...newNotification, date: e.target.value})} />
+                                    <input type="text" value={newNotification.date} onChange={(e) => setNewNotification({ ...newNotification, date: e.target.value })} />
                                 </div>
                                 <div className="admin-form-group">
                                     <label>タイトル *</label>
-                                    <input type="text" value={newNotification.title} onChange={(e) => setNewNotification({...newNotification, title: e.target.value})} placeholder="タイトルを入力" />
+                                    <input type="text" value={newNotification.title} onChange={(e) => setNewNotification({ ...newNotification, title: e.target.value })} placeholder="タイトルを入力" />
                                 </div>
                                 <div className="admin-form-group">
                                     <label>説明</label>
-                                    <textarea value={newNotification.description} onChange={(e) => setNewNotification({...newNotification, description: e.target.value})} placeholder="説明を入力" />
+                                    <textarea value={newNotification.description} onChange={(e) => setNewNotification({ ...newNotification, description: e.target.value })} placeholder="説明を入力" />
                                 </div>
                                 <div className="admin-form-group">
                                     <label>リンク（YouTube等）</label>
-                                    <input type="text" value={newNotification.link} onChange={(e) => setNewNotification({...newNotification, link: e.target.value})} placeholder="https://..." />
+                                    <input type="text" value={newNotification.link} onChange={(e) => setNewNotification({ ...newNotification, link: e.target.value })} placeholder="https://..." />
                                 </div>
                                 <div className="admin-form-actions">
                                     <button className="btn-admin-save" onClick={handleAddNotification}>追加</button>
@@ -3019,26 +3615,26 @@
                                 <h3>お知らせを編集</h3>
                                 <div className="admin-form-group">
                                     <label>タグ</label>
-                                    <select value={editingNotification.tag} onChange={(e) => setEditingNotification({...editingNotification, tag: e.target.value})}>
+                                    <select value={editingNotification.tag} onChange={(e) => setEditingNotification({ ...editingNotification, tag: e.target.value })}>
                                         <option value="お知らせ">お知らせ</option>
                                         <option value="動画">動画</option>
                                     </select>
                                 </div>
                                 <div className="admin-form-group">
                                     <label>日付</label>
-                                    <input type="text" value={editingNotification.date} onChange={(e) => setEditingNotification({...editingNotification, date: e.target.value})} />
+                                    <input type="text" value={editingNotification.date} onChange={(e) => setEditingNotification({ ...editingNotification, date: e.target.value })} />
                                 </div>
                                 <div className="admin-form-group">
                                     <label>タイトル *</label>
-                                    <input type="text" value={editingNotification.title} onChange={(e) => setEditingNotification({...editingNotification, title: e.target.value})} />
+                                    <input type="text" value={editingNotification.title} onChange={(e) => setEditingNotification({ ...editingNotification, title: e.target.value })} />
                                 </div>
                                 <div className="admin-form-group">
                                     <label>説明</label>
-                                    <textarea value={editingNotification.description || ''} onChange={(e) => setEditingNotification({...editingNotification, description: e.target.value})} />
+                                    <textarea value={editingNotification.description || ''} onChange={(e) => setEditingNotification({ ...editingNotification, description: e.target.value })} />
                                 </div>
                                 <div className="admin-form-group">
                                     <label>リンク（YouTube等）</label>
-                                    <input type="text" value={editingNotification.link || ''} onChange={(e) => setEditingNotification({...editingNotification, link: e.target.value})} />
+                                    <input type="text" value={editingNotification.link || ''} onChange={(e) => setEditingNotification({ ...editingNotification, link: e.target.value })} />
                                 </div>
                                 <div className="admin-form-actions">
                                     <button className="btn-admin-save" onClick={handleEditNotification}>保存</button>
@@ -3049,7 +3645,7 @@
 
                         {/* 新規追加ボタン */}
                         {isAdminMode && !showAddForm && !editingNotification && (
-                            <button className="admin-toggle" style={{background: '#3b82f6', color: 'white'}} onClick={() => setShowAddForm(true)}>
+                            <button className="admin-toggle" style={{ background: '#3b82f6', color: 'white' }} onClick={() => setShowAddForm(true)}>
                                 + 新しいお知らせを追加
                             </button>
                         )}
@@ -3122,9 +3718,9 @@
                         <p><strong>主訴:</strong> {patientData.basicInfo.chiefComplaint || '（未入力）'}</p>
                     </div>
 
-                    <div className="section" style={{borderLeftColor: '#f59e0b'}}>
+                    <div className="section" style={{ borderLeftColor: '#f59e0b' }}>
                         <h2 className="section-title">現在の仮説</h2>
-                        <p style={{color: '#666', fontSize: '14px', marginBottom: '15px'}}>
+                        <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>
                             この患者の症状について、今どのような仮説を持っていますか？
                         </p>
                         <div className="form-group">
@@ -3134,14 +3730,14 @@
                                 value={patientData.currentHypothesis.hypothesis}
                                 onChange={(e) => updateCurrentHypothesis('hypothesis', e.target.value)}
                                 placeholder="例：歩行時の右膝痛は、大腿四頭筋の筋力低下により膝関節の動的安定性が低下し、関節面への負荷が増大しているためと考える。また、ハムストリングスの短縮による膝屈曲制限も影響している可能性がある。"
-                                style={{minHeight: '150px'}}
+                                style={{ minHeight: '150px' }}
                             />
                         </div>
                     </div>
 
-                    <div className="section" style={{borderLeftColor: '#10b981'}}>
+                    <div className="section" style={{ borderLeftColor: '#10b981' }}>
                         <h2 className="section-title">現在行っている治療</h2>
-                        <p style={{color: '#666', fontSize: '14px', marginBottom: '15px'}}>
+                        <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>
                             今、どのような治療・介入を行っていますか？
                         </p>
                         <div className="form-group">
@@ -3151,14 +3747,14 @@
                                 value={patientData.currentHypothesis.treatmentContent}
                                 onChange={(e) => updateCurrentHypothesis('treatmentContent', e.target.value)}
                                 placeholder="例：&#10;・大腿四頭筋の筋力強化（OKC：SLR、CKC：スクワット）&#10;・ハムストリングスのストレッチ（静的ストレッチ30秒×3セット）&#10;・歩行訓練（杖を使用した正しい歩容の指導）&#10;・ホームエクササイズの指導（セルフストレッチ、筋力訓練）"
-                                style={{minHeight: '150px'}}
+                                style={{ minHeight: '150px' }}
                             />
                         </div>
                     </div>
 
-                    <div className="section" style={{borderLeftColor: '#8b5cf6'}}>
+                    <div className="section" style={{ borderLeftColor: '#8b5cf6' }}>
                         <h2 className="section-title">治療選択の理由</h2>
-                        <p style={{color: '#666', fontSize: '14px', marginBottom: '15px'}}>
+                        <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>
                             なぜその治療を選択したのですか？仮説との関連を説明してください。
                         </p>
                         <div className="form-group">
@@ -3168,14 +3764,14 @@
                                 value={patientData.currentHypothesis.rationale}
                                 onChange={(e) => updateCurrentHypothesis('rationale', e.target.value)}
                                 placeholder="例：&#10;仮説として大腿四頭筋の筋力低下が主因と考えているため、まずは筋力強化を中心に介入。OKCで個別筋の強化を図りつつ、CKCで実際の荷重時の筋活動を促す。&#10;&#10;ハムストリングスの短縮も膝伸展制限の一因と考え、ストレッチを併用。歩行訓練は、強化した筋力を実際の動作に統合するため実施。"
-                                style={{minHeight: '150px'}}
+                                style={{ minHeight: '150px' }}
                             />
                         </div>
                     </div>
 
-                    <div className="info-box" style={{background: '#fef3c7', border: '1px solid #f59e0b', marginTop: '20px'}}>
-                        <h3 style={{color: '#92400e', marginBottom: '10px'}}>このタブの使い方</h3>
-                        <ul style={{color: '#78350f', fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px'}}>
+                    <div className="info-box" style={{ background: '#fef3c7', border: '1px solid #f59e0b', marginTop: '20px' }}>
+                        <h3 style={{ color: '#92400e', marginBottom: '10px' }}>このタブの使い方</h3>
+                        <ul style={{ color: '#78350f', fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px' }}>
                             <li>症例検討・フィードバック前に、現在の考えを整理するために使用します</li>
                             <li>「仮説」→「治療」→「理由」の流れで、自分の臨床推論を言語化してみましょう</li>
                             <li>フィードバック後は、評価タブ以降で詳細な分析を行います</li>
@@ -3194,11 +3790,11 @@
                         <div className="id-row">
                             <div className="form-group">
                                 <label className="form-label">患者ID（必須）</label>
-                                <input type="text" className="form-input" value={patientData.patientId} onChange={(e) => setPatientData(prev => ({...prev, patientId: e.target.value}))} placeholder="例：PT-2025-001" />
+                                <input type="text" className="form-input" value={patientData.patientId} onChange={(e) => setPatientData(prev => ({ ...prev, patientId: e.target.value }))} placeholder="例：PT-2025-001" />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">初回評価日</label>
-                                <input type="date" className="form-input" value={patientData.createdDate} onChange={(e) => setPatientData(prev => ({...prev, createdDate: e.target.value}))} />
+                                <input type="date" className="form-input" value={patientData.createdDate} onChange={(e) => setPatientData(prev => ({ ...prev, createdDate: e.target.value }))} />
                             </div>
                         </div>
                     </div>
@@ -3248,21 +3844,21 @@
                         </div>
                     </div>
 
-                    <div className="section" style={{background: '#e8f5e9', borderLeftColor: '#4caf50'}}>
-                        <h2 className="section-title" style={{color: '#2e7d32'}}>使い方ガイド（最終版）</h2>
-                        <p style={{marginBottom: '10px', lineHeight: '1.6'}}>
+                    <div className="section" style={{ background: '#e8f5e9', borderLeftColor: '#4caf50' }}>
+                        <h2 className="section-title" style={{ color: '#2e7d32' }}>使い方ガイド（最終版）</h2>
+                        <p style={{ marginBottom: '10px', lineHeight: '1.6' }}>
                             この基本情報は<strong>すべてのタブで共有</strong>されます。
                         </p>
-                        <ol style={{marginLeft: '20px', lineHeight: '1.8'}}>
+                        <ol style={{ marginLeft: '20px', lineHeight: '1.8' }}>
                             <li>まず基本情報を入力</li>
                             <li>「評価」タブで評価結果を入力し、セッションとして保存</li>
                             <li>「症例分析」タブに移動すると<strong>自動で引き継ぎを確認</strong></li>
                             <li>「運動療法」タブで具体的な運動プログラムを立案</li>
                         </ol>
-                        <p style={{marginTop: '15px', padding: '10px', background: 'white', borderRadius: '8px', fontSize: '14px'}}>
-                            <strong>機能：</strong><br/>
-                            ・評価・症例分析・治療介入を一貫管理<br/>
-                            ・AIによるフローチャート自動生成<br/>
+                        <p style={{ marginTop: '15px', padding: '10px', background: 'white', borderRadius: '8px', fontSize: '14px' }}>
+                            <strong>機能：</strong><br />
+                            ・評価・症例分析・治療介入を一貫管理<br />
+                            ・AIによるフローチャート自動生成<br />
                             ・タブ間の自動引き継ぎ機能
                         </p>
                     </div>
@@ -3286,9 +3882,9 @@
                     {/* セッション履歴 */}
                     {patientData.evaluationSessions.length > 0 && (
                         <div className="session-history">
-                            <h3 style={{marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}} onClick={() => setShowHistory(!showHistory)}>
+                            <h3 style={{ marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onClick={() => setShowHistory(!showHistory)}>
                                 評価履歴（{patientData.evaluationSessions.length}回）
-                                <span style={{fontSize: '20px'}}>{showHistory ? '▼' : '▶'}</span>
+                                <span style={{ fontSize: '20px' }}>{showHistory ? '▼' : '▶'}</span>
                             </h3>
                             {showHistory && patientData.evaluationSessions.map((session, index) => (
                                 <div key={index} className="session-item" onClick={() => loadEvaluationSession(index)}>
@@ -3306,7 +3902,7 @@
                     <div className="section">
                         <div className="section-title">
                             現在のセッション <span className="session-badge">編集中</span>
-                            <button className="btn btn-success btn-small" onClick={addEvaluationSession} style={{marginLeft: 'auto'}}>
+                            <button className="btn btn-success btn-small" onClick={addEvaluationSession} style={{ marginLeft: 'auto' }}>
                                 ➕ セッションを保存して新規作成
                             </button>
                         </div>
@@ -3362,8 +3958,8 @@
                     <div className="section">
                         <h2 className="section-title">ステップ3：因果関係分析</h2>
                         <div className="form-group">
-                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                                <label className="form-label" style={{marginBottom: 0}}>機能→動作の関連（「なぜ？」を繰り返す）</label>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                <label className="form-label" style={{ marginBottom: 0 }}>機能→動作の関連（「なぜ？」を繰り返す）</label>
                                 <button
                                     className="btn btn-success btn-small"
                                     onClick={() => {
@@ -3375,13 +3971,13 @@
                                     ➕ なぜ？を追加
                                 </button>
                             </div>
-                            <div className="help-text" style={{marginBottom: '10px'}}>各入力欄に分けて記入してください。自動で矢印（→）がつながります</div>
-                            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                            <div className="help-text" style={{ marginBottom: '10px' }}>各入力欄に分けて記入してください。自動で矢印（→）がつながります</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {patientData.currentEvaluation.causal_whys.map((why, index) => (
                                     <React.Fragment key={index}>
-                                        <div style={{display: 'flex', gap: '10px', alignItems: 'flex-start'}}>
-                                            <div style={{flex: 1}}>
-                                                <label className="form-label" style={{fontSize: '13px', color: '#3b82f6'}}>
+                                        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <label className="form-label" style={{ fontSize: '13px', color: '#3b82f6' }}>
                                                     なぜ{index + 1}
                                                     {index === 0 && ' （表面的な問題）'}
                                                     {index === patientData.currentEvaluation.causal_whys.length - 1 && index > 0 && ' （根本原因）'}
@@ -3407,22 +4003,22 @@
                                                         updateCurrentEvaluation('causal_whys', newWhys);
                                                     }}
                                                     type="button"
-                                                    style={{marginTop: '28px', padding: '8px 12px'}}
+                                                    style={{ marginTop: '28px', padding: '8px 12px' }}
                                                 >
                                                     ✕
                                                 </button>
                                             )}
                                         </div>
                                         {index < patientData.currentEvaluation.causal_whys.length - 1 && (
-                                            <div style={{textAlign: 'center', color: '#3b82f6', fontWeight: '600', fontSize: '18px'}}>↓</div>
+                                            <div style={{ textAlign: 'center', color: '#3b82f6', fontWeight: '600', fontSize: '18px' }}>↓</div>
                                         )}
                                     </React.Fragment>
                                 ))}
                             </div>
                             {patientData.currentEvaluation.causal_whys.filter(x => x).length > 0 && (
-                                <div style={{marginTop: '15px', padding: '12px', background: '#eff6ff', borderRadius: '10px', borderLeft: '3px solid #3b82f6'}}>
-                                    <strong style={{color: '#2563eb'}}>因果関係：</strong>
-                                    <span style={{color: '#1e293b'}}>
+                                <div style={{ marginTop: '15px', padding: '12px', background: '#eff6ff', borderRadius: '10px', borderLeft: '3px solid #3b82f6' }}>
+                                    <strong style={{ color: '#2563eb' }}>因果関係：</strong>
+                                    <span style={{ color: '#1e293b' }}>
                                         {patientData.currentEvaluation.causal_whys.filter(x => x).join(' → ')}
                                     </span>
                                 </div>
@@ -3435,18 +4031,18 @@
                         </div>
                         <div className="form-group">
                             <label className="form-label">仮説の生成（三角ロジック活用）</label>
-                            <textarea className="form-textarea" value={patientData.currentEvaluation.hypothesis} onChange={(e) => updateCurrentEvaluation('hypothesis', e.target.value)} placeholder="データ → 根拠 → 結論" style={{minHeight: '120px'}} />
+                            <textarea className="form-textarea" value={patientData.currentEvaluation.hypothesis} onChange={(e) => updateCurrentEvaluation('hypothesis', e.target.value)} placeholder="データ → 根拠 → 結論" style={{ minHeight: '120px' }} />
                             <div className="help-text">例：内側広筋MMT3→反射性萎縮→選択的トレーニング必要</div>
                         </div>
                     </div>
 
                     <div className="button-group">
-                        <button className="btn btn-info" onClick={exportEvaluationCSV} style={{background: '#3b82f6'}}>
+                        <button className="btn btn-info" onClick={exportEvaluationCSV} style={{ background: '#3b82f6' }}>
                             評価データをCSV出力
                         </button>
-                        <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer', margin: 0}}>
+                        <label className="btn btn-success" style={{ background: '#10b981', cursor: 'pointer', margin: 0 }}>
                             評価CSVを読み込む
-                            <input type="file" accept=".csv" onChange={importEvaluationCSV} style={{display: 'none'}} />
+                            <input type="file" accept=".csv" onChange={importEvaluationCSV} style={{ display: 'none' }} />
                         </label>
                         <button className="btn btn-warning" onClick={inheritToCase}>
                             症例分析タブに引き継ぐ
@@ -3472,9 +4068,9 @@
                     {/* セッション履歴 */}
                     {patientData.exerciseSessions.length > 0 && (
                         <div className="session-history">
-                            <h3 style={{marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}} onClick={() => setShowHistory(!showHistory)}>
+                            <h3 style={{ marginBottom: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onClick={() => setShowHistory(!showHistory)}>
                                 運動療法履歴（{patientData.exerciseSessions.length}回）
-                                <span style={{fontSize: '20px'}}>{showHistory ? '▼' : '▶'}</span>
+                                <span style={{ fontSize: '20px' }}>{showHistory ? '▼' : '▶'}</span>
                             </h3>
                             {showHistory && patientData.exerciseSessions.map((session, index) => (
                                 <div key={index} className="session-item" onClick={() => loadExerciseSession(index)}>
@@ -3492,7 +4088,7 @@
                     <div className="section">
                         <div className="section-title">
                             現在のセッション <span className="session-badge">編集中</span>
-                            <button className="btn btn-success btn-small" onClick={addExerciseSession} style={{marginLeft: 'auto'}}>
+                            <button className="btn btn-success btn-small" onClick={addExerciseSession} style={{ marginLeft: 'auto' }}>
                                 ➕ セッションを保存して新規作成
                             </button>
                         </div>
@@ -3561,51 +4157,51 @@
 
                     <div className="section">
                         <h2 className="section-title">運動療法</h2>
-                        <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
+                        <div style={{ background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107' }}>
                             <strong>臨床推論のポイント：</strong> この問題に対して運動療法が最適なのか？徒手療法や物理療法と比較して検討しましょう
                         </div>
                         <div className="form-group">
                             <label className="form-label">具体的な運動療法の内容</label>
-                            <textarea className="form-textarea" value={patientData.currentExercise.selectedExercise} onChange={(e) => updateCurrentExercise('selectedExercise', e.target.value)} placeholder="運動名、方法、負荷、セット数など" style={{minHeight: '120px'}} />
+                            <textarea className="form-textarea" value={patientData.currentExercise.selectedExercise} onChange={(e) => updateCurrentExercise('selectedExercise', e.target.value)} placeholder="運動名、方法、負荷、セット数など" style={{ minHeight: '120px' }} />
                             <div className="help-text">例：股関節伸展制限に対して → 大殿筋の求心性収縮（相反神経抑制で腸腰筋の柔軟性改善）</div>
                         </div>
                         <div className="form-group">
                             <label className="form-label">なぜ運動療法を選んだのか？（他の方法との比較）</label>
-                            <textarea className="form-textarea" value={patientData.currentExercise.exerciseRationale} onChange={(e) => updateCurrentExercise('exerciseRationale', e.target.value)} placeholder="徒手療法や物理療法と比較して、なぜ運動療法が最適なのか？" style={{minHeight: '120px'}} />
+                            <textarea className="form-textarea" value={patientData.currentExercise.exerciseRationale} onChange={(e) => updateCurrentExercise('exerciseRationale', e.target.value)} placeholder="徒手療法や物理療法と比較して、なぜ運動療法が最適なのか？" style={{ minHeight: '120px' }} />
                             <div className="help-text">例：徒手療法（ストレッチ）も可能だが、相反神経抑制を利用することで能動的な可動域改善が期待でき、患者自身でも継続可能</div>
                         </div>
                     </div>
 
                     <div className="section">
                         <h2 className="section-title">徒手療法（マニュアルセラピー）</h2>
-                        <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
+                        <div style={{ background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107' }}>
                             <strong>臨床推論のポイント：</strong> この問題に対して徒手療法が最適なのか？運動療法や物理療法と比較して検討しましょう
                         </div>
                         <div className="form-group">
                             <label className="form-label">具体的な徒手療法の内容</label>
-                            <textarea className="form-textarea" value={patientData.currentExercise.manualTherapy} onChange={(e) => updateCurrentExercise('manualTherapy', e.target.value)} placeholder="関節モビライゼーション、筋膜リリース、ストレッチング、マッサージなど" style={{minHeight: '120px'}} />
+                            <textarea className="form-textarea" value={patientData.currentExercise.manualTherapy} onChange={(e) => updateCurrentExercise('manualTherapy', e.target.value)} placeholder="関節モビライゼーション、筋膜リリース、ストレッチング、マッサージなど" style={{ minHeight: '120px' }} />
                             <div className="help-text">例：股関節伸展制限に対して → 腸腰筋の静的ストレッチング（30秒×3セット）</div>
                         </div>
                         <div className="form-group">
                             <label className="form-label">なぜ徒手療法を選んだのか？（他の方法との比較）</label>
-                            <textarea className="form-textarea" value={patientData.currentExercise.manualTherapyRationale} onChange={(e) => updateCurrentExercise('manualTherapyRationale', e.target.value)} placeholder="運動療法や物理療法と比較して、なぜ徒手療法が最適なのか？" style={{minHeight: '120px'}} />
+                            <textarea className="form-textarea" value={patientData.currentExercise.manualTherapyRationale} onChange={(e) => updateCurrentExercise('manualTherapyRationale', e.target.value)} placeholder="運動療法や物理療法と比較して、なぜ徒手療法が最適なのか？" style={{ minHeight: '120px' }} />
                             <div className="help-text">例：運動療法（相反神経抑制）も可能だが、筋の短縮が著明なため、まず直接的なストレッチで筋長を改善してから運動療法に移行する方が効果的</div>
                         </div>
                     </div>
 
                     <div className="section">
                         <h2 className="section-title">物理療法</h2>
-                        <div style={{background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107'}}>
+                        <div style={{ background: '#fff3cd', padding: '12px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', borderLeft: '3px solid #ffc107' }}>
                             <strong>臨床推論のポイント：</strong> この問題に対して物理療法が最適なのか？運動療法や徒手療法と比較して検討しましょう
                         </div>
                         <div className="form-group">
                             <label className="form-label">具体的な物理療法の内容</label>
-                            <textarea className="form-textarea" value={patientData.currentExercise.physicalTherapy} onChange={(e) => updateCurrentExercise('physicalTherapy', e.target.value)} placeholder="温熱療法、寒冷療法、電気刺激療法、超音波療法など" style={{minHeight: '120px'}} />
+                            <textarea className="form-textarea" value={patientData.currentExercise.physicalTherapy} onChange={(e) => updateCurrentExercise('physicalTherapy', e.target.value)} placeholder="温熱療法、寒冷療法、電気刺激療法、超音波療法など" style={{ minHeight: '120px' }} />
                             <div className="help-text">例：股関節伸展制限に対して → ホットパック前処置後、ストレッチング実施</div>
                         </div>
                         <div className="form-group">
                             <label className="form-label">なぜ物理療法を選んだのか？（他の方法との比較）</label>
-                            <textarea className="form-textarea" value={patientData.currentExercise.physicalTherapyRationale} onChange={(e) => updateCurrentExercise('physicalTherapyRationale', e.target.value)} placeholder="運動療法や徒手療法と比較して、なぜ物理療法が最適なのか？" style={{minHeight: '120px'}} />
+                            <textarea className="form-textarea" value={patientData.currentExercise.physicalTherapyRationale} onChange={(e) => updateCurrentExercise('physicalTherapyRationale', e.target.value)} placeholder="運動療法や徒手療法と比較して、なぜ物理療法が最適なのか？" style={{ minHeight: '120px' }} />
                             <div className="help-text">例：単独では効果限定的だが、徒手療法の前処置として温熱により筋の伸張性を高めることで、ストレッチの効果を最大化できる</div>
                         </div>
                     </div>
@@ -3737,12 +4333,12 @@
                     </div>
 
                     <div className="button-group">
-                        <button className="btn btn-info" onClick={exportExerciseCSV} style={{background: '#3b82f6'}}>
+                        <button className="btn btn-info" onClick={exportExerciseCSV} style={{ background: '#3b82f6' }}>
                             治療介入データをCSV出力
                         </button>
-                        <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer'}}>
+                        <label className="btn btn-success" style={{ background: '#10b981', cursor: 'pointer' }}>
                             治療介入データをCSV読み込み
-                            <input type="file" accept=".csv" onChange={importExerciseCSV} style={{display: 'none'}} />
+                            <input type="file" accept=".csv" onChange={importExerciseCSV} style={{ display: 'none' }} />
                         </label>
                     </div>
                 </>
@@ -3782,7 +4378,7 @@
                 const hasChildren = node.children && node.children.length > 0;
 
                 return (
-                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{
                             padding: '12px',
                             borderRadius: '8px',
@@ -3795,24 +4391,24 @@
                             textAlign: 'center',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                         }}>
-                            <p style={{fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', color: isProblem ? '#f87171' : '#60a5fa'}}>
+                            <p style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', color: isProblem ? '#f87171' : '#60a5fa' }}>
                                 {isProblem ? '仮説' : '評価所見'}
                             </p>
                             <p>{node.label}</p>
                         </div>
 
                         {hasChildren && (
-                            <div style={{marginTop: '24px', display: 'flex', justifyContent: 'center', position: 'relative'}}>
-                                <div style={{position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '24px', backgroundColor: '#94a3b8'}} />
+                            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '24px', backgroundColor: '#94a3b8' }} />
 
-                                <div style={{display: 'flex', alignItems: 'start', gap: '24px'}}>
+                                <div style={{ display: 'flex', alignItems: 'start', gap: '24px' }}>
                                     {node.children.map((child, index) => {
                                         const isOnlyChild = node.children.length === 1;
                                         const isFirstChild = index === 0;
                                         const isLastChild = index === node.children.length - 1;
 
                                         return (
-                                            <div key={child.id} style={{position: 'relative', paddingTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                                            <div key={child.id} style={{ position: 'relative', paddingTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                                 {!isOnlyChild && (
                                                     <div style={{
                                                         position: 'absolute',
@@ -3823,7 +4419,7 @@
                                                         right: isLastChild ? '50%' : '0'
                                                     }} />
                                                 )}
-                                                <div style={{position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '40px', backgroundColor: '#94a3b8'}} />
+                                                <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '40px', backgroundColor: '#94a3b8' }} />
                                                 <RenderNode node={child} />
                                             </div>
                                         );
@@ -3838,12 +4434,12 @@
             const tree = buildTree(data.nodes);
 
             if (!tree || tree.length === 0) {
-                return <p style={{textAlign: 'center', color: '#64748b'}}>フローチャートに表示するデータがありません。</p>;
+                return <p style={{ textAlign: 'center', color: '#64748b' }}>フローチャートに表示するデータがありません。</p>;
             }
 
             return (
-                <div style={{padding: '32px', overflowX: 'auto', backgroundColor: '#f1f5f9', borderRadius: '8px'}}>
-                    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'start', gap: '32px', minWidth: 'max-content'}}>
+                <div style={{ padding: '32px', overflowX: 'auto', backgroundColor: '#f1f5f9', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'start', gap: '32px', minWidth: 'max-content' }}>
                         {tree.map(rootNode => (
                             <RenderNode key={rootNode.id} node={rootNode} />
                         ))}
@@ -3939,9 +4535,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr1_q1 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q1_reason} onChange={(e) => updateCaseAnalysis('cr1_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q1_reason} onChange={(e) => updateCaseAnalysis('cr1_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -3956,9 +4552,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr1_q2 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q2_reason} onChange={(e) => updateCaseAnalysis('cr1_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q2_reason} onChange={(e) => updateCaseAnalysis('cr1_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -3973,9 +4569,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr1_q4 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q4_reason} onChange={(e) => updateCaseAnalysis('cr1_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr1_q4_reason} onChange={(e) => updateCaseAnalysis('cr1_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -3998,9 +4594,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr2_q1 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q1_reason} onChange={(e) => updateCaseAnalysis('cr2_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q1_reason} onChange={(e) => updateCaseAnalysis('cr2_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4015,9 +4611,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr2_q2 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q2_reason} onChange={(e) => updateCaseAnalysis('cr2_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr2_q2_reason} onChange={(e) => updateCaseAnalysis('cr2_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4040,9 +4636,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr3_q1 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q1_reason} onChange={(e) => updateCaseAnalysis('cr3_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q1_reason} onChange={(e) => updateCaseAnalysis('cr3_q1_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4057,9 +4653,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr3_q2 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q2_reason} onChange={(e) => updateCaseAnalysis('cr3_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q2_reason} onChange={(e) => updateCaseAnalysis('cr3_q2_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4074,9 +4670,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr3_q3 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q3_reason} onChange={(e) => updateCaseAnalysis('cr3_q3_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q3_reason} onChange={(e) => updateCaseAnalysis('cr3_q3_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4091,9 +4687,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr3_q4 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q4_reason} onChange={(e) => updateCaseAnalysis('cr3_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q4_reason} onChange={(e) => updateCaseAnalysis('cr3_q4_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4108,9 +4704,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr3_q5 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q5_reason} onChange={(e) => updateCaseAnalysis('cr3_q5_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q5_reason} onChange={(e) => updateCaseAnalysis('cr3_q5_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4125,9 +4721,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr3_q6 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q6_reason} onChange={(e) => updateCaseAnalysis('cr3_q6_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q6_reason} onChange={(e) => updateCaseAnalysis('cr3_q6_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4142,9 +4738,9 @@
                                 </label>
                             </div>
                             {patientData.caseAnalysis.cr3_q7 === 'no' && (
-                                <div className="form-group" style={{marginTop: '10px'}}>
+                                <div className="form-group" style={{ marginTop: '10px' }}>
                                     <label className="form-label">Noの理由</label>
-                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q7_reason} onChange={(e) => updateCaseAnalysis('cr3_q7_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{minHeight: '80px'}} />
+                                    <textarea className="form-textarea" value={patientData.caseAnalysis.cr3_q7_reason} onChange={(e) => updateCaseAnalysis('cr3_q7_reason', e.target.value)} placeholder="なぜできなかったのか、次回どう改善するか" style={{ minHeight: '80px' }} />
                                 </div>
                             )}
                         </div>
@@ -4172,11 +4768,11 @@
 
                     <div className="section">
                         <h2 className="section-title">問題点フローチャート（AI生成）</h2>
-                        <p style={{marginBottom: '15px', color: '#64748b', fontSize: '14px'}}>
+                        <p style={{ marginBottom: '15px', color: '#64748b', fontSize: '14px' }}>
                             仮説と所見の関連性を視覚化します。複数の仮説とそれぞれに関連する評価所見を入力してください。
                         </p>
 
-                        <div style={{marginBottom: '20px'}}>
+                        <div style={{ marginBottom: '20px' }}>
                             {patientData.caseAnalysis.flowchartHypotheses.map((item, index) => (
                                 <div key={item.id} style={{
                                     padding: '16px',
@@ -4211,33 +4807,33 @@
                                         </button>
                                     )}
 
-                                    <div className="form-group" style={{marginBottom: '12px'}}>
-                                        <label className="form-label" style={{fontWeight: 'bold'}}>仮説 {index + 1}</label>
+                                    <div className="form-group" style={{ marginBottom: '12px' }}>
+                                        <label className="form-label" style={{ fontWeight: 'bold' }}>仮説 {index + 1}</label>
                                         <input
                                             type="text"
                                             value={item.hypothesis}
                                             onChange={(e) => updateFlowchartHypothesis(item.id, 'hypothesis', e.target.value)}
                                             placeholder="例: 膝蓋大腿関節障害"
                                             className="form-textarea"
-                                            style={{minHeight: 'auto', padding: '8px'}}
+                                            style={{ minHeight: 'auto', padding: '8px' }}
                                         />
                                     </div>
 
-                                    <div className="form-group" style={{marginBottom: '0'}}>
+                                    <div className="form-group" style={{ marginBottom: '0' }}>
                                         <label className="form-label">関連する評価所見・事前情報</label>
                                         <textarea
                                             value={item.findings}
                                             onChange={(e) => updateFlowchartHypothesis(item.id, 'findings', e.target.value)}
                                             placeholder="この仮説を裏付ける情報を改行で区切って入力..."
                                             className="form-textarea"
-                                            style={{minHeight: '100px'}}
+                                            style={{ minHeight: '100px' }}
                                         />
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="button-group" style={{marginBottom: '20px'}}>
+                        <div className="button-group" style={{ marginBottom: '20px' }}>
                             <button
                                 className="btn btn-secondary"
                                 onClick={addFlowchartHypothesis}
@@ -4271,8 +4867,8 @@
                                 borderRadius: '6px',
                                 marginBottom: '20px'
                             }}>
-                                <p style={{fontWeight: 'bold', color: '#991b1b', marginBottom: '4px'}}>エラー</p>
-                                <p style={{color: '#7f1d1d'}}>{patientData.caseAnalysis.flowchartError}</p>
+                                <p style={{ fontWeight: 'bold', color: '#991b1b', marginBottom: '4px' }}>エラー</p>
+                                <p style={{ color: '#7f1d1d' }}>{patientData.caseAnalysis.flowchartError}</p>
                             </div>
                         )}
 
@@ -4293,7 +4889,7 @@
                                     borderRadius: '50%',
                                     animation: 'spin 1s linear infinite'
                                 }} />
-                                <p style={{marginTop: '12px'}}>仮説と所見を分析中...</p>
+                                <p style={{ marginTop: '12px' }}>仮説と所見を分析中...</p>
                             </div>
                         )}
 
@@ -4316,8 +4912,8 @@
                                 color: '#64748b',
                                 textAlign: 'center'
                             }}>
-                                <p style={{fontWeight: '500'}}>生成されたフローチャートがここに表示されます。</p>
-                                <p style={{fontSize: '13px', marginTop: '4px', color: '#94a3b8'}}>
+                                <p style={{ fontWeight: '500' }}>生成されたフローチャートがここに表示されます。</p>
+                                <p style={{ fontSize: '13px', marginTop: '4px', color: '#94a3b8' }}>
                                     仮説と所見を入力し、「フローチャートを生成」をクリックして開始してください。
                                 </p>
                             </div>
@@ -4326,7 +4922,7 @@
 
                     <div className="section">
                         <h2 className="section-title">治療選択（問題点から治療を考える）</h2>
-                        <p style={{marginBottom: '15px', color: '#64748b', fontSize: '14px'}}>
+                        <p style={{ marginBottom: '15px', color: '#64748b', fontSize: '14px' }}>
                             フローチャートで特定した問題点ごとに、治療目標と治療選択肢を整理します。
                         </p>
 
@@ -4339,11 +4935,11 @@
                                 borderRadius: '8px',
                                 marginBottom: '15px'
                             }}>
-                                <p style={{color: '#64748b', marginBottom: '10px'}}>治療計画がまだ作成されていません</p>
+                                <p style={{ color: '#64748b', marginBottom: '10px' }}>治療計画がまだ作成されていません</p>
                                 <button
                                     className="btn btn-primary"
                                     onClick={addTreatmentPlan}
-                                    style={{background: '#60a5fa'}}
+                                    style={{ background: '#60a5fa' }}
                                 >
                                     + 最初の治療計画を作成
                                 </button>
@@ -4388,18 +4984,18 @@
                                         ×
                                     </button>
 
-                                    <h3 style={{fontSize: '18px', fontWeight: 'bold', color: '#1e40af', marginBottom: '15px'}}>
+                                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e40af', marginBottom: '15px' }}>
                                         治療計画 {planIndex + 1}
                                     </h3>
 
-                                    <div className="form-group" style={{marginBottom: '15px'}}>
-                                        <label className="form-label" style={{fontWeight: 'bold'}}>対象とする問題点</label>
+                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                        <label className="form-label" style={{ fontWeight: 'bold' }}>対象とする問題点</label>
                                         {problemNodes.length > 0 ? (
                                             <select
                                                 value={plan.problemNode}
                                                 onChange={(e) => updateTreatmentPlan(plan.id, 'problemNode', e.target.value)}
                                                 className="form-textarea"
-                                                style={{minHeight: 'auto', padding: '8px', cursor: 'pointer'}}
+                                                style={{ minHeight: 'auto', padding: '8px', cursor: 'pointer' }}
                                             >
                                                 <option value="">-- 問題点を選択 --</option>
                                                 {problemNodes.map(node => (
@@ -4413,20 +5009,20 @@
                                                 onChange={(e) => updateTreatmentPlan(plan.id, 'problemNode', e.target.value)}
                                                 placeholder="問題点を入力（フローチャートを生成すると選択できます）"
                                                 className="form-textarea"
-                                                style={{minHeight: 'auto', padding: '8px'}}
+                                                style={{ minHeight: 'auto', padding: '8px' }}
                                             />
                                         )}
                                         <div className="help-text">フローチャートで特定した問題点から選択、または直接入力</div>
                                     </div>
 
-                                    <div className="form-group" style={{marginBottom: '20px'}}>
-                                        <label className="form-label" style={{fontWeight: 'bold'}}>治療目標</label>
+                                    <div className="form-group" style={{ marginBottom: '20px' }}>
+                                        <label className="form-label" style={{ fontWeight: 'bold' }}>治療目標</label>
                                         <textarea
                                             value={plan.treatmentGoal}
                                             onChange={(e) => updateTreatmentPlan(plan.id, 'treatmentGoal', e.target.value)}
                                             placeholder="この問題点に対する具体的な治療目標を記載&#10;例：膝関節屈曲ROM 120度まで改善、疼痛NRS 3以下"
                                             className="form-textarea"
-                                            style={{minHeight: '80px'}}
+                                            style={{ minHeight: '80px' }}
                                         />
                                     </div>
 
@@ -4436,7 +5032,7 @@
                                         borderRadius: '8px',
                                         marginBottom: '10px'
                                     }}>
-                                        <h4 style={{fontSize: '16px', fontWeight: 'bold', color: '#475569', marginBottom: '12px'}}>
+                                        <h4 style={{ fontSize: '16px', fontWeight: 'bold', color: '#475569', marginBottom: '12px' }}>
                                             治療選択肢
                                         </h4>
 
@@ -4470,25 +5066,25 @@
                                                     </button>
                                                 )}
 
-                                                <div style={{display: 'flex', gap: '10px', marginBottom: '8px'}}>
-                                                    <div style={{flex: '2'}}>
-                                                        <label className="form-label" style={{fontSize: '13px'}}>治療選択肢 {optIndex + 1}</label>
+                                                <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+                                                    <div style={{ flex: '2' }}>
+                                                        <label className="form-label" style={{ fontSize: '13px' }}>治療選択肢 {optIndex + 1}</label>
                                                         <input
                                                             type="text"
                                                             value={option.name}
                                                             onChange={(e) => updateTreatmentOption(plan.id, option.id, 'name', e.target.value)}
                                                             placeholder="例：内側広筋選択的トレーニング"
                                                             className="form-textarea"
-                                                            style={{minHeight: 'auto', padding: '6px', fontSize: '14px'}}
+                                                            style={{ minHeight: 'auto', padding: '6px', fontSize: '14px' }}
                                                         />
                                                     </div>
-                                                    <div style={{flex: '1'}}>
-                                                        <label className="form-label" style={{fontSize: '13px'}}>優先順位</label>
+                                                    <div style={{ flex: '1' }}>
+                                                        <label className="form-label" style={{ fontSize: '13px' }}>優先順位</label>
                                                         <select
                                                             value={option.priority}
                                                             onChange={(e) => updateTreatmentOption(plan.id, option.id, 'priority', e.target.value)}
                                                             className="form-textarea"
-                                                            style={{minHeight: 'auto', padding: '6px', fontSize: '14px', cursor: 'pointer'}}
+                                                            style={{ minHeight: 'auto', padding: '6px', fontSize: '14px', cursor: 'pointer' }}
                                                         >
                                                             <option value="">--</option>
                                                             <option value="高">高</option>
@@ -4499,13 +5095,13 @@
                                                 </div>
 
                                                 <div>
-                                                    <label className="form-label" style={{fontSize: '13px'}}>選択理由・根拠</label>
+                                                    <label className="form-label" style={{ fontSize: '13px' }}>選択理由・根拠</label>
                                                     <textarea
                                                         value={option.rationale}
                                                         onChange={(e) => updateTreatmentOption(plan.id, option.id, 'rationale', e.target.value)}
                                                         placeholder="なぜこの治療を選択したのか、エビデンスや病態生理に基づく理由を記載"
                                                         className="form-textarea"
-                                                        style={{minHeight: '60px', fontSize: '14px'}}
+                                                        style={{ minHeight: '60px', fontSize: '14px' }}
                                                     />
                                                 </div>
                                             </div>
@@ -4567,7 +5163,7 @@
                         <div className="progress-bar-container">
                             <div
                                 className={`progress-bar-fill ${getProgressBarClass()}`}
-                                style={{width: `${achievement.percentage}%`}}
+                                style={{ width: `${achievement.percentage}%` }}
                             >
                                 {achievement.percentage > 0 && `${achievement.percentage}%`}
                             </div>
@@ -4589,14 +5185,14 @@
                     </div>
 
                     <div className="button-group">
-                        <button className="btn btn-info" onClick={exportCaseAnalysisCSV} style={{background: '#3b82f6'}}>
+                        <button className="btn btn-info" onClick={exportCaseAnalysisCSV} style={{ background: '#3b82f6' }}>
                             症例分析をCSV出力
                         </button>
-                        <label className="btn btn-success" style={{background: '#10b981', cursor: 'pointer'}}>
+                        <label className="btn btn-success" style={{ background: '#10b981', cursor: 'pointer' }}>
                             症例分析をCSV読み込み
-                            <input type="file" accept=".csv" onChange={importCaseAnalysisCSV} style={{display: 'none'}} />
+                            <input type="file" accept=".csv" onChange={importCaseAnalysisCSV} style={{ display: 'none' }} />
                         </label>
-                        <button className="btn btn-info" onClick={exportFlowchartPNG} style={{background: '#06b6d4'}}>
+                        <button className="btn btn-info" onClick={exportFlowchartPNG} style={{ background: '#06b6d4' }}>
                             フローチャートを画像出力
                         </button>
                         <button className="btn btn-warning" onClick={inheritToExercise}>
@@ -4610,11 +5206,12 @@
         ReactDOM.render(<App />, document.getElementById('root'));
 
         // スプラッシュスクリーンを非表示にする
-        window.addEventListener('load', function() {
-            setTimeout(function() {
+        window.addEventListener('load', function () {
+            setTimeout(function () {
                 document.getElementById('splash').classList.add('hidden');
             }, 1800);
         });
     </script>
 </body>
+
 </html>
