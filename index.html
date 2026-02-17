@@ -2082,9 +2082,26 @@
 
             // Auth状態の監視
             useEffect(() => {
-                const unsubscribe = auth.onAuthStateChanged((user) => {
+                const unsubscribe = auth.onAuthStateChanged(async (user) => {
                     setCurrentUser(user);
                     setAuthLoading(false);
+                    // ログイン時にFirestoreにユーザー情報を保存（ダッシュボード表示用）
+                    if (user) {
+                        try {
+                            const userDoc = await db.collection('users').doc(user.uid).get();
+                            if (!userDoc.exists) {
+                                await db.collection('users').doc(user.uid).set({
+                                    email: user.email,
+                                    patients: [],
+                                    createdAt: new Date().toISOString()
+                                });
+                            } else if (!userDoc.data().email) {
+                                await db.collection('users').doc(user.uid).set({ email: user.email }, { merge: true });
+                            }
+                        } catch (error) {
+                            console.error('ユーザー情報保存エラー:', error);
+                        }
+                    }
                 });
                 return () => unsubscribe();
             }, []);
