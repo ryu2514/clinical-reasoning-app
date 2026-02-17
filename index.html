@@ -377,11 +377,14 @@
             background: white;
             color: #64748b;
             border: 1px solid #e5e7eb;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
         }
 
         .notification-actions .btn-view:hover {
@@ -3322,10 +3325,6 @@
                             )}
                         </div>
                         <div className="header-right">
-                            <div className="user-info">
-                                <span className="user-email">{currentUser.email || currentUser.displayName}</span>
-                                <button className="btn-logout" onClick={handleLogout}>ログアウト</button>
-                            </div>
                             <button className="notification-btn" onClick={() => setShowNotificationPanel(true)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -3575,6 +3574,12 @@
                         <div className="notification-header">
                             <h2>お知らせ</h2>
                             <button className="notification-close" onClick={() => setShowNotificationPanel(false)}>×</button>
+                        </div>
+
+                        {/* ユーザー情報 */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px', background: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+                            <span style={{ fontSize: '13px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{currentUser.email || currentUser.displayName}</span>
+                            <button onClick={handleLogout} style={{ marginLeft: '10px', padding: '6px 14px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#64748b', cursor: 'pointer', whiteSpace: 'nowrap' }}>ログアウト</button>
                         </div>
 
                         {/* 管理者トグル */}
