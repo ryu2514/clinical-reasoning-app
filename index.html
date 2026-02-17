@@ -3236,14 +3236,6 @@
                 setSavedPatients(patients);
                 if (currentUser) firestoreSavePatients(currentUser.uid, patients, currentUser.email);
 
-                const dataStr = JSON.stringify(patientData, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `患者_${patientData.patientId}_${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                URL.revokeObjectURL(url);
 
                 showMessage('患者データを保存しました！');
             };
